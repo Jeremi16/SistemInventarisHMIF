@@ -49,12 +49,5 @@ Bagi anggota tim (Backend Developer), ikuti langkah berikut untuk menjalankan pr
     php artisan serve
     npm run dev
     ```
-
-## 📂 Status Proyek: Frontend Ready
-Saat ini, repositori telah mencakup **Frontend Slicing** yang komprehensif:
-* Tampilan Master Layout (Sidebar & Navbar) sudah siap.
-* Katalog Barang (F-06) dan Form Peminjaman (F-08) telah di-slicing menggunakan Tailwind CSS.
-* Komponen UI bersifat statis (dummy data) dan siap diintegrasikan dengan logika backend.
-
 ---
 *Dokumen ini mengacu pada Product Requirements Document (PRD) Versi 1.0.0 tanggal 8 Maret 2026.*
