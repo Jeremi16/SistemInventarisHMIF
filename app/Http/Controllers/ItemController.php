@@ -19,4 +19,18 @@ class ItemController extends Controller
 
         return view('inventory.index', compact('items', 'categories'));
     }
+
+    public function catalog(Request $request)
+    {
+        $items = Item::query()
+            ->search($request->search)
+            ->byCategory($request->category)
+            ->latest()
+            ->paginate(12);
+
+        $dbCategories = Item::distinct()->pluck('category')->toArray();
+        $categories = array_unique(array_merge(['Electronics', 'Event Gear', 'Office Supplies'], $dbCategories));
+
+        return view('catalog.index', compact('items', 'categories'));
+    }
 }
