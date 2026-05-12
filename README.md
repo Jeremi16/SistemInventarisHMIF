@@ -18,7 +18,7 @@ Sistem ini dikembangkan menggunakan teknologi modern untuk memastikan performa d
 * **Export Laporan:** Kemampuan mengunduh laporan dalam format PDF atau Excel untuk audit organisasi.
 
 ## 🛠️ Panduan Instalasi
-Bagi anggota tim (Backend Developer), ikuti langkah berikut untuk menjalankan proyek di lokal:
+ikuti langkah berikut untuk menjalankan proyek di lokal:
 
 1.  **Clone Repository:**
     ```bash
