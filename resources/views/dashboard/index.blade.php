@@ -3,7 +3,31 @@
 @section('title', 'Dashboard')
 
 @section('content')
+@php
+    $statusConfig = [
+        'pending' => ['label' => 'Menunggu', 'class' => 'bg-yellow-100 text-yellow-800'],
+        'approved' => ['label' => 'Disetujui', 'class' => 'bg-blue-100 text-blue-800'],
+        'rejected' => ['label' => 'Ditolak', 'class' => 'bg-red-100 text-red-800'],
+        'borrowed' => ['label' => 'Dipinjam', 'class' => 'bg-indigo-100 text-indigo-800'],
+        'returned' => ['label' => 'Dikembalikan', 'class' => 'bg-green-100 text-green-800'],
+        'overdue' => ['label' => 'Terlambat', 'class' => 'bg-red-100 text-red-800'],
+    ];
+    $recentBorrowings = $recentBorrowings ?? collect();
+    $dashboardStats = $dashboardStats ?? [
+        'total_items' => 0,
+        'borrowed_items' => 0,
+        'maintenance_items' => 0,
+        'overdue_borrowings' => 0,
+    ];
+@endphp
+
 <div class="space-y-6">
+    @if(session('borrowing_status_updated'))
+        <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+            {{ session('borrowing_status_updated') }}
+        </div>
+    @endif
+
     {{-- Welcome Banner --}}
     <div class="bg-gradient-to-r from-hmif-800 to-hmif-600 rounded-xl p-6 text-white shadow-sm">
         <h2 class="text-2xl font-bold">Selamat Datang, {{ auth()->user()?->name ?? 'Admin' }}!</h2>
@@ -17,7 +41,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-500">Total Barang</p>
-                    <p class="text-2xl font-bold text-gray-800 mt-1">124</p>
+                    <p class="text-2xl font-bold text-gray-800 mt-1">{{ $dashboardStats['total_items'] }}</p>
                 </div>
                 <div class="w-12 h-12 bg-hmif-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-hmif-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -32,7 +56,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-500">Sedang Dipinjam</p>
-                    <p class="text-2xl font-bold text-gray-800 mt-1">12</p>
+                    <p class="text-2xl font-bold text-gray-800 mt-1">{{ $dashboardStats['borrowed_items'] }}</p>
                 </div>
                 <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,7 +71,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-500">Butuh Perawatan</p>
-                    <p class="text-2xl font-bold text-gray-800 mt-1">3</p>
+                    <p class="text-2xl font-bold text-gray-800 mt-1">{{ $dashboardStats['maintenance_items'] }}</p>
                 </div>
                 <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +87,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-500">Terlambat</p>
-                    <p class="text-2xl font-bold text-gray-800 mt-1">2</p>
+                    <p class="text-2xl font-bold text-gray-800 mt-1">{{ $dashboardStats['overdue_borrowings'] }}</p>
                 </div>
                 <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,36 +115,30 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-gray-800">Budi Santoso</td>
-                        <td class="px-6 py-4">Proyektor Epson EB-X400</td>
-                        <td class="px-6 py-4">01 Mei 2026</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Returned
-                            </span>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-gray-800">Siti Aminah</td>
-                        <td class="px-6 py-4">Kabel Roll 50m</td>
-                        <td class="px-6 py-4">05 Mei 2026</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                Pending
-                            </span>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-gray-800">Agus Pratama</td>
-                        <td class="px-6 py-4">Sound System Portable</td>
-                        <td class="px-6 py-4">25 Apr 2026</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                Overdue
-                            </span>
-                        </td>
-                    </tr>
+                    @forelse($recentBorrowings as $borrowing)
+                        @php
+                            $status = $statusConfig[$borrowing->status] ?? $statusConfig['pending'];
+                        @endphp
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <p class="font-medium text-gray-800">{{ $borrowing->borrower_name }}</p>
+                                <p class="text-xs text-gray-400">{{ $borrowing->borrower_nim ?? 'NIM belum tersedia' }}</p>
+                            </td>
+                            <td class="px-6 py-4">{{ $borrowing->item_name }}</td>
+                            <td class="px-6 py-4">{{ $borrowing->start_date->format('d M Y') }}</td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $status['class'] }}">
+                                    {{ $status['label'] }}
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-10 text-center text-sm text-gray-500">
+                                Belum ada pengajuan peminjaman dari member.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
