@@ -11,7 +11,7 @@
             <p class="text-sm text-gray-500 mt-1">Kelola dan lihat semua barang inventaris HMIF</p>
         </div>
         <a
-            href="#"
+            href="{{ route('inventory.create') }}"
             class="inline-flex items-center justify-center px-4 py-2.5 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hmif-500"
         >
             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +123,7 @@
                         </div>
 
                         {{-- Action Button --}}
-                        <a href="#" class="block w-full text-center px-3 py-2 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        <a href="{{ route('inventory.show', $item) }}" class="block w-full text-center px-3 py-2 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                             Lihat Detail
                         </a>
                     </div>

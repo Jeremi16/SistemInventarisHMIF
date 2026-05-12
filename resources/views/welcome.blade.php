@@ -17,9 +17,7 @@
 <!-- Navbar -->
 <nav class="w-full bg-white border-b border-gray-100 py-4 px-6 md:px-12 flex justify-between items-center z-50 sticky top-0">
     <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center border-[3px] border-[#0A192F]">
-            <span class="font-bold text-[#0A192F] text-xs">H</span>
-        </div>
+        <img src="{{ asset('images/logo-hmif.png') }}" alt="Logo HMIF" class="w-10 h-10 rounded-full object-cover">
         <div class="font-bold text-sm leading-tight text-gray-900">
             HMIF Inventory<br><span class="text-[10px] text-gray-500 font-normal uppercase tracking-wider">Sistem HMIF</span>
         </div>
@@ -28,11 +26,11 @@
         <a href="#fitur" class="hover:text-gray-900 transition-colors">Features</a>
         <a href="#tutorial" class="hover:text-gray-900 transition-colors">Tutorial</a>
         <a href="#faq" class="hover:text-gray-900 transition-colors">FAQ</a>
-        <a href="{{ url('/dashboard') }}" class="hover:text-gray-900 transition-colors">Dashboard</a>
+        <a href="{{ route('member.dashboard') }}" class="hover:text-gray-900 transition-colors">Dashboard</a>
     </div>
     <div>
         @auth
-            <a href="{{ url('/dashboard') }}" class="bg-[#4CAF50] hover:bg-[#43a047] text-white px-6 py-2 rounded-full text-sm font-semibold transition-colors shadow-sm">Dashboard</a>
+            <a href="{{ route('member.dashboard') }}" class="bg-[#4CAF50] hover:bg-[#43a047] text-white px-6 py-2 rounded-full text-sm font-semibold transition-colors shadow-sm">Dashboard</a>
         @else
             <a href="{{ url('/login') }}" class="bg-[#4CAF50] hover:bg-[#43a047] text-white px-6 py-2 rounded-full text-sm font-semibold transition-colors shadow-sm">Login</a>
         @endauth

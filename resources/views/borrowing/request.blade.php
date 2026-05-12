@@ -125,7 +125,7 @@
                             <li>Durasi pinjam wajib sesuai tanggal pengajuan dan persetujuan admin/operator.</li>
                             <li>Keterlambatan pengembalian dapat dikenakan denda sesuai ketentuan HMIF.</li>
                             <li>Kerusakan, kehilangan, atau perubahan kondisi barang menjadi tanggung jawab peminjam.</li>
-                            <li>Pengajuan harus dikonfirmasi ke WhatsApp Sherizka setelah formulir dikirim.</li>
+                            <li>Pengajuan harus dikonfirmasi ke WhatsApp setelah formulir dikirim.</li>
                         </ul>
 
                         <label for="terms_accepted" class="mt-4 flex items-start gap-3 text-sm text-hmif-900">
@@ -171,14 +171,14 @@
                 <div>
                     <h3 id="borrowing-success-title" class="text-lg font-semibold text-gray-900">Pengajuan berhasil dikirim</h3>
                     <p class="mt-2 text-sm text-gray-600">
-                        Lanjutkan konfirmasi peminjaman {{ $success['item'] }} ke WhatsApp Sherizka.
+                        Lanjutkan konfirmasi peminjaman {{ $success['item'] }} ke WhatsApp.
                     </p>
                 </div>
             </div>
 
             <div class="mt-6 rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
                 <p class="font-medium text-gray-900">Pesan otomatis:</p>
-                <p class="mt-1">Halo Sherizka, saya {{ $success['name'] }} NIM {{ $success['nim'] }} ingin konfirmasi peminjaman {{ $success['item'] }}</p>
+                <p class="mt-1">Halo, saya {{ $success['name'] }} NIM {{ $success['nim'] }} ingin konfirmasi peminjaman {{ $success['item'] }}</p>
             </div>
 
             <div class="mt-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
@@ -191,7 +191,7 @@
                     rel="noopener noreferrer"
                     class="inline-flex items-center justify-center px-4 py-2 bg-[#25D366] hover:bg-[#128C7E] text-white font-medium rounded-lg transition-colors"
                 >
-                    Redirect ke WhatsApp Sherizka
+                    Redirect ke WhatsApp
                 </a>
             </div>
         </div>
