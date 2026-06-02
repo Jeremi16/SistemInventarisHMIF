@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Item;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,7 +13,9 @@ class InventoryManagementTest extends TestCase
 
     public function test_admin_can_open_new_item_form_and_create_item(): void
     {
-        $this->get(route('inventory.create'))
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->get(route('inventory.create'))
             ->assertOk()
             ->assertSee('Barang Baru')
             ->assertSee('Simpan Barang');
@@ -45,6 +48,8 @@ class InventoryManagementTest extends TestCase
 
     public function test_inventory_detail_link_is_available(): void
     {
+        $member = User::factory()->create(['role' => 'member']);
+
         $item = Item::create([
             'name' => 'Laptop ASUS',
             'category' => 'Elektronik',
@@ -55,7 +60,7 @@ class InventoryManagementTest extends TestCase
             'description' => 'Laptop untuk kegiatan HMIF.',
         ]);
 
-        $this->get(route('inventory.index'))
+        $this->actingAs($member)->get(route('inventory.index'))
             ->assertOk()
             ->assertSee(route('inventory.show', $item), false)
             ->assertSee('Lihat Detail');

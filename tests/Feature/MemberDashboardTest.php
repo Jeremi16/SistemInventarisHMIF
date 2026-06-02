@@ -63,6 +63,12 @@ class MemberDashboardTest extends TestCase
 
     public function test_member_dashboard_shows_member_pov(): void
     {
+        $member = User::factory()->create([
+            'name' => 'Ayu Pratiwi',
+            'nim' => '121140001',
+            'role' => 'member',
+        ]);
+
         Item::create([
             'name' => 'Laptop ASUS',
             'category' => 'Elektronik',
@@ -83,7 +89,7 @@ class MemberDashboardTest extends TestCase
             'admin_note' => 'Silakan ambil barang di sekretariat HMIF.',
         ]);
 
-        $this->withSession([
+        $this->actingAs($member)->withSession([
             'user' => [
                 'name' => 'Ayu Pratiwi',
                 'nim' => '121140001',
@@ -108,7 +114,7 @@ class MemberDashboardTest extends TestCase
             ->assertSee('Laptop ASUS')
             ->assertSee('121140001');
 
-        $this->withSession([
+        $this->actingAs($member)->withSession([
             'user' => [
                 'name' => 'Ayu Pratiwi',
                 'nim' => '121140001',
@@ -122,7 +128,13 @@ class MemberDashboardTest extends TestCase
 
     public function test_member_is_redirected_away_from_admin_dashboard(): void
     {
-        $this->withSession([
+        $member = User::factory()->create([
+            'name' => 'Ayu Pratiwi',
+            'nim' => '121140001',
+            'role' => 'member',
+        ]);
+
+        $this->actingAs($member)->withSession([
             'user' => [
                 'name' => 'Ayu Pratiwi',
                 'nim' => '121140001',

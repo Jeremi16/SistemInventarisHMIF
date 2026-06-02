@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'member',
             'phone' => '081234567890',
             'batch' => '2021',
+            'is_active' => true,
         ]);
 
         User::updateOrCreate([
@@ -38,6 +39,43 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
             'phone' => '081234567890',
             'batch' => '2024',
+            'is_active' => true,
+        ]);
+
+        User::updateOrCreate([
+            'email' => 'sherizka@student.itera.ac.id',
+        ], [
+            'name' => 'Sherizka',
+            'nim' => '124140175',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'phone' => '081234567891',
+            'batch' => '2024',
+            'is_active' => true,
+        ]);
+
+        User::updateOrCreate([
+            'email' => 'regina@student.itera.ac.id',
+        ], [
+            'name' => 'Regina',
+            'nim' => '124140176',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'phone' => '081234567892',
+            'batch' => '2024',
+            'is_active' => true,
+        ]);
+
+        User::updateOrCreate([
+            'email' => 'bendahara2@student.itera.ac.id',
+        ], [
+            'name' => 'Bendahara 2',
+            'nim' => '124140177',
+            'password' => Hash::make('password'),
+            'role' => 'operator',
+            'phone' => '081234567893',
+            'batch' => '2024',
+            'is_active' => true,
         ]);
     }
 }

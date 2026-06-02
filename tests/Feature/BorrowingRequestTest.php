@@ -15,6 +15,13 @@ class BorrowingRequestTest extends TestCase
 
     public function test_member_can_submit_borrowing_request_and_get_whatsapp_confirmation(): void
     {
+        $member = User::factory()->create([
+            'name' => 'Ayu Pratiwi',
+            'nim' => '121140001',
+            'role' => 'member',
+        ]);
+        $admin = User::factory()->create(['role' => 'admin']);
+
         $item = Item::create([
             'name' => 'Laptop ASUS',
             'category' => 'Elektronik',
@@ -23,7 +30,7 @@ class BorrowingRequestTest extends TestCase
             'condition' => 'good',
         ]);
 
-        $this->withSession([
+        $this->actingAs($member)->withSession([
             'user' => [
                 'name' => 'Ayu Pratiwi',
                 'nim' => '121140001',
@@ -35,7 +42,7 @@ class BorrowingRequestTest extends TestCase
             ->assertSee('Ayu Pratiwi')
             ->assertSee('121140001');
 
-        $response = $this->withSession([
+        $response = $this->actingAs($member)->withSession([
             'user' => [
                 'name' => 'Ayu Pratiwi',
                 'nim' => '121140001',
@@ -70,21 +77,19 @@ class BorrowingRequestTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $this->get(route('dashboard'))
+        $this->actingAs($admin)->get(route('dashboard'))
             ->assertOk()
             ->assertSee('Aktivitas Peminjaman Terbaru')
             ->assertSee('Ayu Pratiwi')
             ->assertSee('Laptop ASUS')
             ->assertSee('Menunggu');
 
-        $this->get(route('incoming.index'))
+        $this->actingAs($admin)->get(route('incoming.index'))
             ->assertOk()
-            ->assertSee('Aktivitas Peminjaman Terbaru')
-            ->assertSee('Ayu Pratiwi')
-            ->assertSee('Laptop ASUS')
-            ->assertSee('Menunggu');
+            ->assertSee('Barang Masuk')
+            ->assertSee('Catat Barang Masuk');
 
-        $this->withSession([
+        $this->actingAs($member)->withSession([
             'user' => [
                 'name' => 'Ayu Pratiwi',
                 'nim' => '121140001',
@@ -237,6 +242,12 @@ class BorrowingRequestTest extends TestCase
 
     public function test_member_cannot_open_other_member_borrowing_detail(): void
     {
+        $member = User::factory()->create([
+            'name' => 'Bima Santoso',
+            'nim' => '121140099',
+            'role' => 'member',
+        ]);
+
         $borrowing = Borrowing::create([
             'item_name' => 'Laptop ASUS',
             'borrower_name' => 'Ayu Pratiwi',
@@ -247,7 +258,7 @@ class BorrowingRequestTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $this->withSession([
+        $this->actingAs($member)->withSession([
             'user' => [
                 'name' => 'Bima Santoso',
                 'nim' => '121140099',

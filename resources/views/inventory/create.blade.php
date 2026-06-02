@@ -25,7 +25,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('inventory.store') }}" class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+    <form method="POST" action="{{ route('inventory.store') }}" enctype="multipart/form-data" class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
         @csrf
 
         <div class="grid gap-5 sm:grid-cols-2">
@@ -70,6 +70,12 @@
             <div class="sm:col-span-2">
                 <label for="description" class="mb-2 block text-sm font-semibold text-gray-700">Deskripsi</label>
                 <textarea id="description" name="description" rows="4" class="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100" placeholder="Detail spesifikasi atau catatan barang">{{ old('description') }}</textarea>
+            </div>
+
+            <div class="sm:col-span-2">
+                <label for="photo" class="mb-2 block text-sm font-semibold text-gray-700">Foto Barang</label>
+                <input id="photo" name="photo" type="file" accept="image/*" class="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-hmif-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-hmif-700 focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">
+                <p class="mt-1 text-xs text-gray-400">Opsional. Format gambar maksimal 2MB.</p>
             </div>
         </div>
 

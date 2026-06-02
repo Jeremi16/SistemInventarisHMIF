@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Borrowing extends Model
 {
@@ -20,6 +21,19 @@ class Borrowing extends Model
         'purpose',
         'status',
         'admin_note',
+        'handover_date',
+        'handover_condition',
+        'handover_photo',
+        'return_date',
+        'return_condition',
+        'return_photo',
+        'damage_description',
+        'extension_requested',
+        'extension_new_date',
+        'extension_reason',
+        'fine_amount',
+        'pre_return_condition',
+        'pre_return_check_date',
     ];
 
     protected function casts(): array
@@ -27,11 +41,22 @@ class Borrowing extends Model
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'handover_date' => 'date',
+            'return_date' => 'date',
+            'extension_new_date' => 'date',
+            'pre_return_check_date' => 'date',
+            'extension_requested' => 'boolean',
+            'fine_amount' => 'decimal:2',
         ];
     }
 
     public function item(): BelongsTo
     {
         return $this->belongsTo(Item::class);
+    }
+
+    public function notes(): HasMany
+    {
+        return $this->hasMany(BorrowingNote::class);
     }
 }

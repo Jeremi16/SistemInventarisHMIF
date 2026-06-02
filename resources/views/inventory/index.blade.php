@@ -3,6 +3,10 @@
 @section('title', 'Katalog Inventaris')
 
 @section('content')
+@php
+    $canManageInventory = in_array(strtolower((string) (auth()->user()?->role ?? data_get(session('user', []), 'role'))), ['admin', 'operator'], true);
+@endphp
+
 <div class="space-y-6 max-w-5xl mx-auto">
     {{-- Header & Search + Filter --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -10,20 +14,22 @@
             <h2 class="text-xl font-bold text-gray-800">Katalog Inventaris</h2>
             <p class="text-sm text-gray-500 mt-1">Kelola dan lihat semua barang inventaris HMIF</p>
         </div>
-        <a
-            href="{{ route('inventory.create') }}"
-            class="inline-flex items-center justify-center px-4 py-2.5 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hmif-500"
-        >
-            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Barang Baru
-        </a>
+        @if($canManageInventory)
+            <a
+                href="{{ route('inventory.create') }}"
+                class="inline-flex items-center justify-center px-4 py-2.5 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hmif-500"
+            >
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Barang Baru
+            </a>
+        @endif
     </div>
 
     {{-- Search Bar & Category Filter --}}
     <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <form method="GET" action="{{ route('inventory.index') }}" class="flex flex-col sm:flex-row gap-3">
+        <form method="GET" action="{{ route('inventory.index') }}" class="grid gap-3 md:grid-cols-[1fr_12rem_12rem_12rem_auto]">
             {{-- Search Input --}}
             <div class="relative flex-1">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -41,7 +47,7 @@
             </div>
 
             {{-- Category Filter --}}
-            <div class="sm:w-48">
+            <div>
                 <select
                     name="category"
                     onchange="this.form.submit()"
@@ -58,8 +64,30 @@
                 </select>
             </div>
 
+            <select
+                name="status"
+                onchange="this.form.submit()"
+                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-hmif-500 focus:border-transparent bg-white appearance-none cursor-pointer"
+            >
+                <option value="all" {{ request('status') === 'all' || !request('status') ? 'selected' : '' }}>Semua Status</option>
+                @foreach(['available' => 'Tersedia', 'borrowed' => 'Dipinjam', 'maintenance' => 'Maintenance'] as $value => $label)
+                    <option value="{{ $value }}" {{ request('status') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+
+            <select
+                name="condition"
+                onchange="this.form.submit()"
+                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-hmif-500 focus:border-transparent bg-white appearance-none cursor-pointer"
+            >
+                <option value="all" {{ request('condition') === 'all' || !request('condition') ? 'selected' : '' }}>Semua Kondisi</option>
+                @foreach(['good' => 'Baik', 'fair' => 'Layak Pakai', 'damaged' => 'Rusak'] as $value => $label)
+                    <option value="{{ $value }}" {{ request('condition') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+
             {{-- Reset Button --}}
-            @if(request('search') || request('category'))
+            @if(request('search') || request('category') || request('status') || request('condition'))
                 <a
                     href="{{ route('inventory.index') }}"
                     class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
@@ -87,10 +115,14 @@
             @foreach($items as $item)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
                     {{-- Image Placeholder --}}
-                    <div class="h-36 bg-gray-100 flex items-center justify-center">
-                        <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                        </svg>
+                    <div class="h-36 bg-gray-100 flex items-center justify-center overflow-hidden">
+                        @if($item->photo)
+                            <img src="{{ asset('storage/' . $item->photo) }}" alt="Foto {{ $item->name }}" class="h-full w-full object-cover">
+                        @else
+                            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        @endif
                     </div>
 
                     {{-- Card Content --}}
@@ -123,9 +155,20 @@
                         </div>
 
                         {{-- Action Button --}}
-                        <a href="{{ route('inventory.show', $item) }}" class="block w-full text-center px-3 py-2 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                            Lihat Detail
-                        </a>
+                        @if($canManageInventory)
+                            <div class="grid grid-cols-2 gap-2">
+                                <a href="{{ route('inventory.show', $item) }}" class="block w-full text-center px-3 py-2 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                    Detail
+                                </a>
+                                <a href="{{ route('inventory.edit', $item) }}" class="block w-full text-center px-3 py-2 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200">
+                                    Edit
+                                </a>
+                            </div>
+                        @else
+                            <a href="{{ route('inventory.show', $item) }}" class="block w-full text-center px-3 py-2 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                Lihat Detail
+                            </a>
+                        @endif
                     </div>
                 </div>
             @endforeach

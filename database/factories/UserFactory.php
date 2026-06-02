@@ -33,6 +33,7 @@ class UserFactory extends Factory
             'role' => 'member',
             'phone' => fake()->phoneNumber(),
             'batch' => (string) fake()->numberBetween(2021, 2025),
+            'is_active' => true,
             'remember_token' => Str::random(10),
         ];
     }

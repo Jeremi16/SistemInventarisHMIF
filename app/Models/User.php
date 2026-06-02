@@ -7,10 +7,11 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'nim', 'password', 'role', 'phone', 'batch'])]
+#[Fillable(['name', 'email', 'nim', 'password', 'role', 'phone', 'batch', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,6 +28,17 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
+    }
+
+    public function borrowings(): HasMany
+    {
+        return $this->hasMany(Borrowing::class, 'borrower_nim', 'nim');
+    }
+
+    public function borrowingNotes(): HasMany
+    {
+        return $this->hasMany(BorrowingNote::class);
     }
 }

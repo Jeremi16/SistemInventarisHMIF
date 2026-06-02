@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Borrowing;
 use App\Models\Item;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,6 +14,8 @@ class AdminDashboardStatsTest extends TestCase
 
     public function test_admin_dashboard_stats_are_realtime_from_database(): void
     {
+        $admin = User::factory()->create(['role' => 'admin']);
+
         Item::create([
             'name' => 'Laptop ASUS',
             'category' => 'Elektronik',
@@ -49,7 +52,7 @@ class AdminDashboardStatsTest extends TestCase
             'status' => 'overdue',
         ]);
 
-        $this->get(route('dashboard'))
+        $this->actingAs($admin)->get(route('dashboard'))
             ->assertOk()
             ->assertSeeInOrder(['Total Barang', '4'])
             ->assertSeeInOrder(['Sedang Dipinjam', '2'])

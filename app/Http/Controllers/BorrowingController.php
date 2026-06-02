@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Borrowing;
+use App\Models\BorrowingNote;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -101,6 +102,8 @@ class BorrowingController extends Controller
 
     public function show(Request $request, Borrowing $borrowing)
     {
+        $borrowing->load(['notes.user']);
+
         if (! $this->isAdmin($request)) {
             $borrower = $this->borrowerFromSession($request);
 
@@ -111,6 +114,7 @@ class BorrowingController extends Controller
             'borrowing' => $borrowing,
             'statusLabel' => $this->statusOptions()[$borrowing->status] ?? 'Menunggu',
             'isAdmin' => $this->isAdmin($request),
+            'fineAmount' => $this->calculateFine($borrowing),
         ]);
     }
 
@@ -139,6 +143,266 @@ class BorrowingController extends Controller
         });
 
         return back()->with('borrowing_status_updated', 'Status peminjaman berhasil diperbarui.');
+    }
+
+    // F-10: Pencatatan Penyerahan
+    public function handoverForm(Borrowing $borrowing)
+    {
+        abort_unless(in_array($borrowing->status, ['approved', 'overdue']), 404, 'Peminjaman belum disetujui.');
+
+        return view('borrowing.handover', [
+            'borrowing' => $borrowing,
+            'conditions' => $this->conditionOptions(),
+        ]);
+    }
+
+    public function recordHandover(Request $request, Borrowing $borrowing)
+    {
+        abort_unless($this->isAdmin($request), 403);
+        abort_unless(in_array($borrowing->status, ['approved', 'overdue']), 400, 'Status peminjaman tidak valid untuk penyerahan.');
+
+        $validated = $request->validate([
+            'handover_date' => ['required', 'date', 'after_or_equal:today'],
+            'handover_condition' => ['required', 'string', 'in:' . implode(',', ['good', 'fair', 'damaged'])],
+            'handover_photo' => ['nullable', 'image', 'max:2048'],
+        ], [
+            'handover_date.required' => 'Tanggal penyerahan wajib diisi.',
+            'handover_condition.required' => 'Kondisi barang saat diserahkan wajib diisi.',
+            'handover_photo.image' => 'File harus berupa gambar.',
+            'handover_photo.max' => 'Ukuran foto maksimal 2MB.',
+        ]);
+
+        if ($request->hasFile('handover_photo')) {
+            $validated['handover_photo'] = $request->file('handover_photo')->store('handover', 'public');
+        }
+
+        $borrowing->update([
+            'status' => 'borrowed',
+            'handover_date' => $validated['handover_date'],
+            'handover_condition' => $validated['handover_condition'],
+            'handover_photo' => $validated['handover_photo'] ?? $borrowing->handover_photo,
+        ]);
+
+        return redirect()
+            ->route('borrowing.show', $borrowing)
+            ->with('handover_recorded', 'Penyerahan barang berhasil dicatat.');
+    }
+
+    // F-11: Pencatatan Pengembalian
+    public function returnForm(Borrowing $borrowing)
+    {
+        abort_unless(in_array($borrowing->status, ['borrowed', 'overdue']), 404, 'Barang belum diserahkan atau sudah dikembalikan.');
+
+        return view('borrowing.return', [
+            'borrowing' => $borrowing,
+            'conditions' => $this->conditionOptions(),
+        ]);
+    }
+
+    public function recordReturn(Request $request, Borrowing $borrowing)
+    {
+        abort_unless($this->isAdmin($request), 403);
+        abort_unless(in_array($borrowing->status, ['borrowed', 'overdue']), 400, 'Status peminjaman tidak valid untuk pengembalian.');
+
+        $validated = $request->validate([
+            'return_date' => ['required', 'date', 'after_or_equal:today'],
+            'return_condition' => ['required', 'string', 'in:' . implode(',', ['good', 'fair', 'damaged', 'lost'])],
+            'return_photo' => ['nullable', 'image', 'max:2048'],
+            'damage_description' => ['required_if:return_condition,damaged,lost', 'nullable', 'string', 'max:1000'],
+        ], [
+            'return_date.required' => 'Tanggal pengembalian wajib diisi.',
+            'return_condition.required' => 'Kondisi barang saat dikembalikan wajib diisi.',
+            'return_photo.image' => 'File harus berupa gambar.',
+            'return_photo.max' => 'Ukuran foto maksimal 2MB.',
+            'damage_description.required_if' => 'Deskripsi kerusakan wajib diisi jika barang rusak atau hilang.',
+        ]);
+
+        if ($request->hasFile('return_photo')) {
+            $validated['return_photo'] = $request->file('return_photo')->store('returns', 'public');
+        }
+
+        DB::transaction(function () use ($borrowing, $validated) {
+            $fineAmount = $this->calculateFineForDates($borrowing->end_date, $validated['return_date']);
+
+            $borrowing->update([
+                'status' => 'returned',
+                'return_date' => $validated['return_date'],
+                'return_condition' => $validated['return_condition'],
+                'return_photo' => $validated['return_photo'] ?? $borrowing->return_photo,
+                'damage_description' => $validated['damage_description'] ?? null,
+                'fine_amount' => $fineAmount,
+            ]);
+
+            // Kembalikan stok jika ada item_id
+            if ($borrowing->item_id) {
+                $item = $borrowing->item()->lockForUpdate()->first();
+
+                if ($item) {
+                    // Jika rusak/hilang, jangan kembalikan stok, ubah status item
+                    if (in_array($validated['return_condition'], ['damaged', 'lost'])) {
+                        $item->status = $validated['return_condition'] === 'lost' ? 'maintenance' : 'maintenance';
+                    } else {
+                        $item->quantity += 1;
+                        $item->status = 'available';
+                    }
+
+                    $item->save();
+                }
+            }
+        });
+
+        return redirect()
+            ->route('borrowing.show', $borrowing)
+            ->with('return_recorded', 'Pengembalian barang berhasil dicatat.');
+    }
+
+    // F-14: Perpanjangan Pinjaman
+    public function extensionForm(Request $request, Borrowing $borrowing)
+    {
+        if (! $this->isAdmin($request)) {
+            $borrower = $this->borrowerFromSession($request);
+            abort_unless($borrowing->borrower_nim === $borrower['nim'], 403);
+        }
+
+        abort_unless(in_array($borrowing->status, ['borrowed', 'overdue']), 404, 'Peminjaman tidak dalam status aktif.');
+
+        return view('borrowing.extension', [
+            'borrowing' => $borrowing,
+        ]);
+    }
+
+    public function requestExtension(Request $request, Borrowing $borrowing)
+    {
+        $borrower = $this->borrowerFromSession($request);
+        abort_unless($borrowing->borrower_nim === $borrower['nim'], 403);
+        abort_unless(in_array($borrowing->status, ['borrowed', 'overdue']), 400, 'Peminjaman tidak dalam status aktif.');
+        abort_if($borrowing->extension_requested, 400, 'Perpanjangan sudah diajukan, menunggu persetujuan.');
+
+        $validated = $request->validate([
+            'extension_new_date' => ['required', 'date', 'after:' . $borrowing->end_date->format('Y-m-d')],
+            'extension_reason' => ['required', 'string', 'max:500'],
+        ], [
+            'extension_new_date.required' => 'Tanggal perpanjangan wajib diisi.',
+            'extension_new_date.after' => 'Tanggal perpanjangan harus setelah tanggal jatuh tempo.',
+            'extension_reason.required' => 'Alasan perpanjangan wajib diisi.',
+        ]);
+
+        $borrowing->update([
+            'extension_requested' => true,
+            'extension_new_date' => $validated['extension_new_date'],
+            'extension_reason' => $validated['extension_reason'],
+        ]);
+
+        return redirect()
+            ->route('borrowing.show', $borrowing)
+            ->with('extension_requested', 'Permintaan perpanjangan berhasil diajukan, menunggu persetujuan admin.');
+    }
+
+    public function approveExtension(Request $request, Borrowing $borrowing)
+    {
+        abort_unless($this->isAdmin($request), 403);
+        abort_unless($borrowing->extension_requested, 400, 'Tidak ada permintaan perpanjangan.');
+
+        $borrowing->update([
+            'end_date' => $borrowing->extension_new_date,
+            'status' => $borrowing->status === 'overdue' ? 'borrowed' : $borrowing->status,
+            'extension_requested' => false,
+            'extension_new_date' => null,
+            'extension_reason' => null,
+            'admin_note' => 'Perpanjangan disetujui hingga ' . $borrowing->extension_new_date->format('d M Y') . '.',
+        ]);
+
+        return back()->with('extension_approved', 'Perpanjangan peminjaman disetujui.');
+    }
+
+    public function rejectExtension(Request $request, Borrowing $borrowing)
+    {
+        abort_unless($this->isAdmin($request), 403);
+        abort_unless($borrowing->extension_requested, 400, 'Tidak ada permintaan perpanjangan.');
+
+        $request->validate([
+            'admin_note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $borrowing->update([
+            'extension_requested' => false,
+            'extension_new_date' => null,
+            'extension_reason' => null,
+            'admin_note' => $request->admin_note ?: 'Perpanjangan ditolak.',
+        ]);
+
+        return back()->with('extension_rejected', 'Perpanjangan peminjaman ditolak.');
+    }
+
+    // Task 19: Catatan Berkala Peminjaman (Notulensi #12)
+    public function storeNote(Request $request, Borrowing $borrowing)
+    {
+        $validated = $request->validate([
+            'content' => ['required', 'string', 'max:2000'],
+        ], [
+            'content.required' => 'Isi catatan wajib diisi.',
+        ]);
+
+        BorrowingNote::create([
+            'borrowing_id' => $borrowing->id,
+            'user_id' => $request->user()?->id,
+            'content' => $validated['content'],
+        ]);
+
+        return back()->with('note_added', 'Catatan berhasil ditambahkan.');
+    }
+
+    public function deleteNote(BorrowingNote $note)
+    {
+        $note->delete();
+
+        return back()->with('note_deleted', 'Catatan berhasil dihapus.');
+    }
+
+    // Task 18: Pengecekan Barang Pra-Pengembalian (Notulensi #7)
+    public function preReturnCheck(Request $request, Borrowing $borrowing)
+    {
+        abort_unless(in_array($borrowing->status, ['borrowed', 'overdue']), 400, 'Status peminjaman tidak valid untuk pengecekan.');
+
+        $validated = $request->validate([
+            'pre_return_condition' => ['required', 'string', 'in:good,fair,damaged'],
+            'pre_return_check_date' => ['required', 'date', 'before_or_equal:today'],
+        ], [
+            'pre_return_condition.required' => 'Kondisi barang wajib diisi.',
+            'pre_return_check_date.required' => 'Tanggal pengecekan wajib diisi.',
+        ]);
+
+        $borrowing->update($validated);
+
+        return back()->with('pre_return_checked', 'Pengecekan pra-pengembalian berhasil dicatat.');
+    }
+
+    // Task 17: Hitung Denda Keterlambatan (Notulensi #4)
+    public function calculateFine(Borrowing $borrowing): float
+    {
+        if (! in_array($borrowing->status, ['borrowed', 'overdue', 'returned'])) {
+            return 0;
+        }
+
+        return $this->calculateFineForDates(
+            $borrowing->end_date,
+            $borrowing->return_date ?: now()
+        );
+    }
+
+    private function calculateFineForDates($dueDate, $returnDate): float
+    {
+        $dueDate = \Illuminate\Support\Carbon::parse($dueDate)->startOfDay();
+        $returnDate = \Illuminate\Support\Carbon::parse($returnDate)->startOfDay();
+
+        $daysLate = max(0, (int) $dueDate->diffInDays($returnDate, false));
+
+        if ($daysLate <= 0) {
+            return 0;
+        }
+
+        // Denda Rp 5.000 per hari keterlambatan
+        return $daysLate * 5000;
     }
 
     private function borrowerFromSession(Request $request): array
@@ -227,11 +491,20 @@ class BorrowingController extends Controller
         ];
     }
 
+    private function conditionOptions(): array
+    {
+        return [
+            'good' => 'Baik',
+            'fair' => 'Layak Pakai',
+            'damaged' => 'Rusak',
+        ];
+    }
+
     private function isAdmin(Request $request): bool
     {
         $role = $request->user()?->role
             ?? data_get($request->session()->get('user', []), 'role');
 
-        return strtolower((string) $role) === 'admin';
+        return in_array(strtolower((string) $role), ['admin', 'operator'], true);
     }
 }
