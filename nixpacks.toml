@@ -1,0 +1,13 @@
+[variables]
+NIXPACKS_NODE_VERSION = "22"
+NIXPACKS_PHP_ROOT_DIR = "/app/public"
+NIXPACKS_PHP_FALLBACK_PATH = "/index.php"
+
+[phases.install]
+cmds = [
+    "composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction",
+    "npm ci"
+]
+
+[phases.build]
+cmds = ["npm run build"]
