@@ -4,7 +4,13 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
+        "deploy": "bash scripts/deploy.sh",
+        "deploy:build": "bash scripts/deploy-build.sh",
+        "deploy:release": "bash scripts/deploy-release.sh",
         "dev": "vite"
+    },
+    "engines": {
+        "node": "22"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.2.4",
