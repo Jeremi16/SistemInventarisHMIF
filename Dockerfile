@@ -41,6 +41,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libpq-dev \
     && docker-php-ext-install pdo_pgsql pgsql \
     && a2enmod rewrite headers \
+    && printf 'ServerName localhost\n' > /etc/apache2/conf-available/server-name.conf \
+    && a2enconf server-name \
     && sed -ri -e 's!DocumentRoot /var/www/html!DocumentRoot /var/www/html/public!g' /etc/apache2/sites-available/*.conf \
     && printf '<Directory /var/www/html/public>\n    AllowOverride All\n    Require all granted\n</Directory>\n' > /etc/apache2/conf-available/laravel.conf \
     && a2enconf laravel \
