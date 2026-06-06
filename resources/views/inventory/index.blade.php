@@ -13,17 +13,6 @@
         <div>
             <h2 class="text-xl font-bold text-gray-800">Katalog Inventaris</h2>
         </div>
-        @if($canManageInventory)
-            <a
-                href="{{ route('inventory.create') }}"
-                class="inline-flex items-center justify-center px-4 py-2.5 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hmif-500"
-            >
-                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                Barang Baru
-            </a>
-        @endif
     </div>
 
     {{-- Search Bar & Category Filter --}}

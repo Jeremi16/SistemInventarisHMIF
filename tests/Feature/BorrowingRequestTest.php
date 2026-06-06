@@ -6,6 +6,7 @@ use App\Models\Borrowing;
 use App\Models\Item;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -15,6 +16,10 @@ class BorrowingRequestTest extends TestCase
 
     public function test_member_can_submit_borrowing_request_and_get_whatsapp_confirmation(): void
     {
+        $submittedAt = Carbon::parse('2026-06-06 19:22:45');
+        Carbon::setTestNow($submittedAt);
+        $this->beforeApplicationDestroyed(fn () => Carbon::setTestNow());
+
         $member = User::factory()->create([
             'name' => 'Ayu Pratiwi',
             'nim' => '121140001',
@@ -53,8 +58,8 @@ class BorrowingRequestTest extends TestCase
         ])->post(route('borrowing.store'), [
             'item_id' => $item->id,
             'item_name' => $item->name,
-            'start_date' => now()->toDateString(),
-            'end_date' => now()->addDay()->toDateString(),
+            'start_date' => $submittedAt->toDateString(),
+            'end_date' => $submittedAt->copy()->addDay()->toDateString(),
             'purpose' => 'Digunakan untuk rapat kerja HMIF.',
             'terms_accepted' => '1',
         ]);
@@ -66,6 +71,7 @@ class BorrowingRequestTest extends TestCase
                     && $success['nim'] === '121140001'
                     && $success['item'] === 'Laptop ASUS'
                     && filled($success['borrowing_id'])
+                    && str_contains($success['redirect_url'], '/borrowing/' . $success['borrowing_id'])
                     && str_contains(
                         urldecode($success['whatsapp_url']),
                         'Halo Sherizka, saya Ayu Pratiwi NIM 121140001 ingin konfirmasi peminjaman Laptop ASUS'
@@ -81,7 +87,7 @@ class BorrowingRequestTest extends TestCase
         ]);
 
         $borrowing = Borrowing::where('item_id', $item->id)->firstOrFail();
-        $this->assertSame(now()->format('H:i:s'), $borrowing->start_date->format('H:i:s'));
+        $this->assertSame($submittedAt->format('H:i:s'), $borrowing->start_date->format('H:i:s'));
         $this->assertSame($borrowing->start_date->format('H:i:s'), $borrowing->end_date->format('H:i:s'));
 
         $this->actingAs($admin)->get(route('dashboard'))

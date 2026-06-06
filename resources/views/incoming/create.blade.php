@@ -27,13 +27,8 @@
         @csrf
         <div class="grid gap-5 sm:grid-cols-2">
             <div class="sm:col-span-2">
-                <label for="item_id" class="mb-2 block text-sm font-semibold text-gray-700">Barang</label>
-                <select id="item_id" name="item_id" required class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">
-                    <option value="">Pilih barang</option>
-                    @foreach($items as $item)
-                        <option value="{{ $item->id }}" @selected(old('item_id') == $item->id)>{{ $item->name }} - stok {{ $item->quantity }}</option>
-                    @endforeach
-                </select>
+                <label for="item_name" class="mb-2 block text-sm font-semibold text-gray-700">Barang</label>
+                <input id="item_name" name="item_name" type="text" value="{{ old('item_name') }}" required maxlength="255" class="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100" placeholder="Masukkan nama barang">
             </div>
 
             <div>
