@@ -20,7 +20,7 @@
     $userRole = $roleLabels[strtolower((string) $resolvedRole)] ?? ($resolvedRole ?: ($isMember ? 'Anggota' : 'Admin'));
 
     $statusLabels = [
-        'approved' => 'Disetujui',
+        'approved' => 'Siap Diambil',
         'rejected' => 'Ditolak',
         'borrowed' => 'Diterima',
         'returned' => 'Dikembalikan',
@@ -46,31 +46,31 @@
 
     if ($notificationCount > 0) {
         $notificationReadKey = sha1($memberNim . '|' . $statusNotifications
-            ->map(fn ($notification) => $notification->id . ':' . $notification->status . ':' . ($notification->updated_at?->timestamp ?? 0))
+            ->map(fn ($notification) => $notification->id . ':' . $notification->status . ':' . ($notification->updated_at?->timestamp ?? 0) . ':' . ($notification->extension_rejected_at?->timestamp ?? 0))
             ->implode('|'));
     }
 @endphp
 
 <header class="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
-    <div class="flex items-center justify-between h-16 px-4 md:px-6">
+    <div class="flex h-16 items-center justify-between gap-2 px-3 sm:px-4 md:px-6">
         {{-- Left: Mobile Menu Toggle + Page Title --}}
-        <div class="flex items-center gap-4">
+        <div class="min-w-0 flex flex-1 items-center gap-2 sm:gap-4">
             <button
                 onclick="toggleSidebar()"
-                class="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                class="shrink-0 rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 lg:hidden"
                 aria-label="Toggle sidebar"
             >
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
             </button>
-            <h1 class="text-lg font-semibold text-gray-800">@yield('title', 'Dashboard')</h1>
+            <h1 class="min-w-0 truncate text-base font-semibold text-gray-800 sm:text-lg">@yield('title', 'Dashboard')</h1>
         </div>
 
         {{-- Right: Notifications + User Menu --}}
-        <div class="flex items-center gap-3">
+        <div class="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-3">
             {{-- Theme Switch --}}
-            <div class="hmif-theme-switch" aria-label="Pilih tema tampilan">
+            <div class="hmif-theme-switch hidden sm:grid" aria-label="Pilih tema tampilan">
                 <button
                     type="button"
                     data-theme-option="light"
@@ -107,7 +107,7 @@
                     data-notification-key="{{ $notificationReadKey }}"
                     data-notification-storage-key="{{ $notificationStorageKey }}"
                     onclick="toggleNotificationDropdown(this)"
-                    class="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                    class="relative rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
                     aria-label="Buka notifikasi"
                 >
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,26 +120,35 @@
                     @endif
                 </button>
 
-                <div class="hidden absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg z-50">
+                <div class="hidden absolute right-0 mt-2 w-80 max-w-[calc(100vw-1rem)] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg z-50">
                     <div class="border-b border-gray-100 px-4 py-3">
-                        <p class="text-sm font-semibold text-gray-900">Notifikasi Status</p>
-                        <p class="mt-0.5 text-xs text-gray-500">Perubahan status peminjaman dari admin.</p>
+                        <p class="text-sm font-semibold text-gray-900">Notifikasi Peminjaman</p>
+                        <p class="mt-0.5 text-xs text-gray-500">Status peminjaman dan keputusan perpanjangan dari admin.</p>
                     </div>
                     <div class="max-h-80 overflow-y-auto">
                         @forelse($statusNotifications as $notification)
+                            @php
+                                $isExtensionRejected = filled($notification->extension_rejection_reason) && filled($notification->extension_rejected_at);
+                            @endphp
                             <a href="{{ route('borrowing.show', $notification) }}" class="block border-b border-gray-100 px-4 py-3 last:border-b-0 hover:bg-gray-50">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="min-w-0">
                                         <p class="truncate text-sm font-semibold text-gray-900">{{ $notification->item_name }}</p>
                                         <p class="mt-1 text-xs text-gray-500">
-                                            Status diubah menjadi {{ $statusLabels[$notification->status] ?? 'Diperbarui' }}.
+                                            @if($isExtensionRejected)
+                                                Perpanjangan peminjaman ditolak admin.
+                                            @else
+                                                Status diubah menjadi {{ $statusLabels[$notification->status] ?? 'Diperbarui' }}.
+                                            @endif
                                         </p>
-                                        @if($notification->admin_note)
+                                        @if($isExtensionRejected)
+                                            <p class="mt-1 line-clamp-2 text-xs text-red-600">{{ $notification->extension_rejection_reason }}</p>
+                                        @elseif($notification->admin_note)
                                             <p class="mt-1 line-clamp-2 text-xs text-gray-500">{{ $notification->admin_note }}</p>
                                         @endif
                                     </div>
-                                    <span class="shrink-0 rounded-full bg-hmif-50 px-2 py-1 text-[11px] font-semibold text-hmif-700">
-                                        {{ $statusLabels[$notification->status] ?? 'Update' }}
+                                    <span class="shrink-0 rounded-full {{ $isExtensionRejected ? 'bg-red-50 text-red-700' : 'bg-hmif-50 text-hmif-700' }} px-2 py-1 text-[11px] font-semibold">
+                                        {{ $isExtensionRejected ? 'Perpanjangan' : ($statusLabels[$notification->status] ?? 'Update') }}
                                     </span>
                                 </div>
                             </a>
@@ -153,10 +162,13 @@
             </div>
 
             {{-- User Dropdown --}}
-            <div class="relative" x-data="{ open: false }">
+            <div class="relative" data-user-menu-root>
                 <button
-                    onclick="this.nextElementSibling.classList.toggle('hidden')"
-                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    type="button"
+                    onclick="toggleUserDropdown(this)"
+                    class="flex items-center gap-2 rounded-xl border border-transparent p-1.5 transition-colors hover:border-gray-200 hover:bg-gray-50 sm:gap-3 sm:p-2"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
                 >
                     <div class="hidden sm:block text-right">
                         <p class="text-sm font-medium text-gray-700">{{ $userName }}</p>
@@ -171,15 +183,25 @@
                 </button>
 
                 {{-- Dropdown Menu --}}
-                <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                        Profil Saya
+                <div class="hidden absolute right-0 mt-2 w-64 max-w-[calc(100vw-1rem)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl z-50" role="menu">
+                    <div class="border-b border-gray-100 px-4 py-3">
+                        <p class="truncate text-sm font-semibold text-gray-900">{{ $userName }}</p>
+                        <p class="mt-0.5 text-xs text-gray-500">{{ $userRole }}</p>
+                    </div>
+                    <a href="{{ route('profile.show') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-hmif-50 hover:text-hmif-800" role="menuitem">
+                        <svg class="h-4 w-4 text-hmif-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a8.25 8.25 0 1 1 16.5 0"/>
+                        </svg>
+                        <span>Profil Saya</span>
                     </a>
-                    <div class="border-t border-gray-100 my-1"></div>
+                    <div class="border-t border-gray-100"></div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                            Keluar
+                        <button type="submit" class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3-3H9.75m0 0 3-3m-3 3 3 3"/>
+                            </svg>
+                            <span>Keluar</span>
                         </button>
                     </form>
                 </div>
@@ -226,6 +248,14 @@
             }
         }
 
+        function toggleUserDropdown(button) {
+            const menu = button.nextElementSibling;
+            const willOpen = menu.classList.contains('hidden');
+
+            menu.classList.toggle('hidden');
+            button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const button = document.getElementById('notification-button');
 
@@ -239,6 +269,22 @@
             if (notificationKey && storageKey && getStoredNotificationKey(storageKey) === notificationKey) {
                 hideNotificationBadge();
             }
+
+            document.addEventListener('click', function (event) {
+                document.querySelectorAll('[data-user-menu-root]').forEach(function (root) {
+                    if (root.contains(event.target)) {
+                        return;
+                    }
+
+                    const menuButton = root.querySelector('button[aria-haspopup="menu"]');
+                    const menu = menuButton?.nextElementSibling;
+
+                    if (menu && !menu.classList.contains('hidden')) {
+                        menu.classList.add('hidden');
+                        menuButton.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
         });
     </script>
 @endonce

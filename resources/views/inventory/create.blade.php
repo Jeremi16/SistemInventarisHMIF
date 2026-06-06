@@ -5,11 +5,11 @@
 @section('content')
 <div class="mx-auto max-w-3xl space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900">Barang Baru</h2>
+        <div class="min-w-0">
+            <h2 class="text-xl font-bold text-gray-900 sm:text-2xl">Barang Baru</h2>
             <p class="mt-1 text-sm text-gray-500">Tambahkan data barang inventaris HMIF.</p>
         </div>
-        <a href="{{ route('inventory.index') }}" class="inline-flex items-center justify-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+        <a href="{{ route('inventory.index') }}" class="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 sm:w-auto">
             Kembali
         </a>
     </div>
@@ -25,7 +25,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('inventory.store') }}" enctype="multipart/form-data" class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+    <form method="POST" action="{{ route('inventory.store') }}" enctype="multipart/form-data" class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
         @csrf
 
         <div class="grid gap-5 sm:grid-cols-2">
@@ -79,7 +79,7 @@
             </div>
         </div>
 
-        <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div class="hmif-mobile-actions mt-6 sm:justify-end">
             <a href="{{ route('inventory.index') }}" class="inline-flex items-center justify-center rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                 Batal
             </a>

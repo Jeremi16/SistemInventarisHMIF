@@ -5,11 +5,11 @@
 @section('content')
 <div class="mx-auto max-w-3xl space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900">Edit Barang</h2>
-            <p class="mt-1 text-sm text-gray-500">Perbarui data inventaris {{ $item->name }}.</p>
+        <div class="min-w-0">
+            <h2 class="text-xl font-bold text-gray-900 sm:text-2xl">Edit Barang</h2>
+            <p class="hmif-break-anywhere mt-1 text-sm text-gray-500">Perbarui data inventaris {{ $item->name }}.</p>
         </div>
-        <a href="{{ route('inventory.show', $item) }}" class="inline-flex items-center justify-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+        <a href="{{ route('inventory.show', $item) }}" class="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 sm:w-auto">
             Kembali
         </a>
     </div>
@@ -25,7 +25,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('inventory.update', $item) }}" enctype="multipart/form-data" class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+    <form method="POST" action="{{ route('inventory.update', $item) }}" enctype="multipart/form-data" class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
         @csrf
         @method('PUT')
 
@@ -83,11 +83,11 @@
             </div>
         </div>
 
-        <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-between">
             <button type="button" onclick="document.getElementById('delete-item-form').submit()" class="inline-flex items-center justify-center rounded-lg border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50">
                 Hapus Barang
             </button>
-            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
                 <a href="{{ route('inventory.show', $item) }}" class="inline-flex items-center justify-center rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                     Batal
                 </a>

@@ -37,10 +37,10 @@
                     </div>
                 </div>
 
-                <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-8">
                     <div class="mb-7">
                         <p class="text-sm font-semibold uppercase tracking-[0.16em] text-[#1b8a1d]">Login Anggota</p>
-                        <h2 class="mt-2 text-2xl font-bold text-gray-950">Masuk ke akun member</h2>
+                        <h2 class="mt-2 text-xl font-bold text-gray-950 sm:text-2xl">Masuk ke akun member</h2>
                         <p class="mt-2 text-sm leading-6 text-gray-500">Gunakan email HMIF atau NIM yang terdaftar oleh admin.</p>
                     </div>
 
@@ -103,7 +103,7 @@
 
                         <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1b8a1d] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#176d19] focus:outline-none focus:ring-4 focus:ring-green-100">
                             <span>Masuk</span>
-                            <!-- <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"> -->
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0-4 4m4-4H3"/>
                             </svg>
                         </button>

@@ -7,14 +7,14 @@
     {{-- Header & Search + Filter --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800">Katalog Barang</h2>
+            <h2 class="text-xl font-bold text-gray-800 sm:text-2xl">Katalog Barang</h2>
             <p class="text-sm text-gray-500 mt-1">Jelajahi dan pinjam barang inventaris HMIF untuk keperluan Anda.</p>
         </div>
     </div>
 
     {{-- Search Bar & Category Filter --}}
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <form method="GET" action="{{ route('catalog.index') }}" class="grid gap-3 md:grid-cols-[1fr_12rem_12rem_12rem_auto]">
+    <div class="rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
+        <form method="GET" action="{{ route('catalog.index') }}" data-auto-filter class="grid gap-3 md:grid-cols-[1fr_12rem_12rem_12rem_auto]">
             {{-- Search Input --}}
             <div class="relative flex-1">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -35,7 +35,6 @@
             <div>
                 <select
                     name="category"
-                    onchange="this.form.submit()"
                     class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-hmif-500 bg-white"
                 >
                     <option value="all" {{ request('category') === 'all' || !request('category') ? 'selected' : '' }}>
@@ -51,7 +50,6 @@
 
             <select
                 name="status"
-                onchange="this.form.submit()"
                 class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-hmif-500 bg-white"
             >
                 <option value="all" {{ request('status') === 'all' || !request('status') ? 'selected' : '' }}>Semua Status</option>
@@ -62,7 +60,6 @@
 
             <select
                 name="condition"
-                onchange="this.form.submit()"
                 class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-hmif-500 bg-white"
             >
                 <option value="all" {{ request('condition') === 'all' || !request('condition') ? 'selected' : '' }}>Semua Kondisi</option>
@@ -84,11 +81,11 @@
 
     {{-- Items Grid --}}
     @if($items->count() > 0)
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
             @foreach($items as $item)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col">
                     {{-- Image Placeholder --}}
-                    <div class="h-48 bg-gray-50 border-b border-gray-100 flex items-center justify-center relative overflow-hidden">
+                    <div class="relative flex h-40 items-center justify-center overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-48">
                         @if($item->photo)
                             <img src="{{ asset('storage/' . $item->photo) }}" alt="Foto {{ $item->name }}" class="h-full w-full object-cover">
                         @else
@@ -127,7 +124,7 @@
                         <span class="text-xs font-bold text-hmif-600 uppercase tracking-wider mb-1">{{ $item->category }}</span>
                         
                         {{-- Title --}}
-                        <h3 class="font-bold text-gray-900 text-lg line-clamp-1" title="{{ $item->name }}">{{ $item->name }}</h3>
+                        <h3 class="hmif-break-anywhere text-base font-bold text-gray-900 sm:text-lg" title="{{ $item->name }}">{{ $item->name }}</h3>
                         
                         {{-- Stock Info --}}
                         <p class="text-sm text-gray-500 mt-2 flex items-center">
@@ -159,12 +156,12 @@
         </div>
     @else
         {{-- Empty State with Mock Data to Preview Design --}}
-        <div class="bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-4 mb-6 flex items-start">
+        <div class="bg-hmif-50 border border-hmif-200 text-hmif-800 rounded-xl p-4 mb-6 flex items-start">
             <svg class="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <p class="text-sm">Database saat ini kosong. Menampilkan data mockup agar Anda dapat melihat preview desain Katalog Member.</p>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
             @php
                 $mocks = [
                     ['name' => 'Proyektor Epson EB-X400', 'cat' => 'Electronics', 'qty' => 2, 'status' => 'available'],
