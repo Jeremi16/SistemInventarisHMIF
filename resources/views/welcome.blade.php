@@ -13,12 +13,21 @@
     </style>
 </head>
 <body class="antialiased bg-white text-gray-800">
+@php
+    $landingDashboardRoute = route('member.dashboard');
+
+    if (auth()->check()) {
+        $landingDashboardRoute = in_array(strtolower((string) auth()->user()->role), ['admin', 'operator'], true)
+            ? route('dashboard')
+            : route('member.dashboard');
+    }
+@endphp
 
 <!-- Navbar -->
-<nav class="w-full bg-white border-b border-gray-100 py-4 px-6 md:px-12 flex justify-between items-center z-50 sticky top-0">
+<nav class="sticky top-0 z-50 flex w-full items-center justify-between gap-3 border-b border-gray-100 bg-white px-4 py-3 sm:px-6 md:px-12">
     <div class="flex items-center gap-3">
-        <img src="{{ asset('images/logo-hmif.png') }}" alt="Logo HMIF" class="w-10 h-10 rounded-full object-cover">
-        <div class="font-bold text-sm leading-tight text-gray-900">
+        <img src="{{ asset('images/logo-hmif.png') }}" alt="Logo HMIF" class="h-9 w-9 rounded-full object-cover sm:h-10 sm:w-10">
+        <div class="text-sm font-bold leading-tight text-gray-900">
             HMIF Inventory<br><span class="text-[10px] text-gray-500 font-normal uppercase tracking-wider">Sistem HMIF</span>
         </div>
     </div>
@@ -26,48 +35,50 @@
         <a href="#fitur" class="hover:text-gray-900 transition-colors">Features</a>
         <a href="#tutorial" class="hover:text-gray-900 transition-colors">Tutorial</a>
         <a href="#faq" class="hover:text-gray-900 transition-colors">FAQ</a>
-        <a href="{{ route('member.dashboard') }}" class="hover:text-gray-900 transition-colors">Dashboard</a>
+        @auth
+            <a href="{{ $landingDashboardRoute }}" class="hover:text-gray-900 transition-colors">Dashboard</a>
+        @endauth
     </div>
     <div>
         @auth
-            <a href="{{ route('member.dashboard') }}" class="bg-[#4CAF50] hover:bg-[#43a047] text-white px-6 py-2 rounded-full text-sm font-semibold transition-colors shadow-sm">Dashboard</a>
+            <a href="{{ $landingDashboardRoute }}" class="rounded-full bg-[#4CAF50] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#43a047] sm:px-6">Dashboard</a>
         @else
-            <a href="{{ url('/login') }}" class="bg-[#4CAF50] hover:bg-[#43a047] text-white px-6 py-2 rounded-full text-sm font-semibold transition-colors shadow-sm">Login</a>
+            <a href="{{ url('/login') }}" class="rounded-full bg-[#4CAF50] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#43a047] sm:px-6">Login</a>
         @endauth
     </div>
 </nav>
 
 <!-- Hero -->
-<div class="pt-20 pb-16 px-6 max-w-5xl mx-auto text-center">
+<div class="mx-auto max-w-5xl px-4 pb-10 pt-14 text-center sm:px-6 sm:pb-16 sm:pt-20">
     <span class="inline-block bg-[#4CAF50] text-white text-[11px] font-bold px-3 py-1 rounded-full mb-6 tracking-wide">HMIF PORTAL</span>
-    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold font-heading text-[#111827] leading-tight mb-6 tracking-tight">
+    <h1 class="mb-6 text-3xl font-extrabold font-heading leading-tight tracking-tight text-[#111827] sm:text-4xl md:text-5xl lg:text-6xl">
         Sistem Inventaris dan<br>Peminjaman Barang HMIF
     </h1>
-    <p class="text-gray-500 max-w-2xl mx-auto mb-10 text-lg leading-relaxed">
+    <p class="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-gray-500 sm:mb-10 sm:text-lg">
         Kelola aset himpunan dengan presisi, cepat, transparan, dan terorganisir untuk seluruh anggota HMIF.
     </p>
-    <a href="#tutorial" class="inline-block bg-[#4CAF50] hover:bg-[#43a047] text-white font-semibold px-8 py-3.5 rounded-full transition-transform hover:-translate-y-0.5 shadow-lg shadow-green-500/25 mb-16">
+    <a href="#tutorial" class="mb-8 inline-block rounded-full bg-[#4CAF50] px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-green-500/25 transition-transform hover:-translate-y-0.5 hover:bg-[#43a047] sm:mb-16 sm:px-8 sm:py-3.5 sm:text-base">
         Lihat Tutorial
     </a>
 </div>
 
 <!-- Hero Mockup -->
-<div class="max-w-5xl mx-auto px-6 mb-32">
-    <div class="bg-gray-50 rounded-3xl p-6 md:p-8 shadow-xl border border-gray-100/50 flex">
+<div class="mx-auto mb-16 max-w-5xl px-4 sm:mb-32 sm:px-6">
+    <div class="flex rounded-3xl border border-gray-100/50 bg-gray-50 p-4 shadow-xl sm:p-6 md:p-8">
         <!-- Sidebar -->
         <div class="w-16 bg-white/60 backdrop-blur-sm rounded-2xl flex flex-col items-center py-6 gap-6 border border-gray-200/50 mr-8 hidden md:flex">
-            <div class="w-6 h-6 rounded-md bg-blue-500"></div>
+            <div class="w-6 h-6 rounded-md bg-[#4CAF50]"></div>
             <div class="w-5 h-5 rounded-md border-2 border-gray-300"></div>
             <div class="w-5 h-5 rounded-md border-2 border-gray-300"></div>
             <div class="w-5 h-5 rounded-md border-2 border-gray-300"></div>
         </div>
         <!-- Main -->
         <div class="flex-1 flex flex-col gap-6">
-            <div class="flex justify-end"><div class="w-8 h-8 rounded-full bg-blue-100"></div></div>
-            <div class="grid grid-cols-3 gap-4">
+            <div class="flex justify-end"><div class="w-8 h-8 rounded-full bg-green-100"></div></div>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 h-28 flex flex-col justify-center gap-2">
                     <div class="w-1/3 h-2 bg-gray-200 rounded-full"></div>
-                    <div class="w-2/3 h-3.5 bg-blue-300 rounded-full"></div>
+                    <div class="w-2/3 h-3.5 bg-green-300 rounded-full"></div>
                 </div>
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 h-28 flex flex-col justify-center gap-2">
                     <div class="w-1/3 h-2 bg-gray-200 rounded-full"></div>
@@ -88,10 +99,10 @@
 </div>
 
 <!-- Fitur Utama -->
-<div id="fitur" class="bg-[#F8F9FA] py-24">
-    <div class="max-w-7xl mx-auto px-6">
+<div id="fitur" class="bg-[#F8F9FA] py-14 sm:py-24">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
         <div class="mb-14">
-            <h2 class="text-3xl font-bold font-heading text-gray-900 mb-3">Fitur Utama</h2>
+            <h2 class="mb-3 text-2xl font-bold font-heading text-gray-900 sm:text-3xl">Fitur Utama</h2>
             <p class="text-gray-500 max-w-xl text-sm leading-relaxed">Didesain untuk menyederhanakan birokrasi dan menjaga keamanan aset himpunan.</p>
         </div>
         <div class="grid md:grid-cols-4 gap-6">
@@ -117,9 +128,9 @@
 </div>
 
 <!-- Cara Meminjam Barang -->
-<div id="tutorial" class="py-24 max-w-7xl mx-auto px-6">
+<div id="tutorial" class="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-24">
     <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold font-heading text-gray-900 mb-3">Cara Meminjam Barang</h2>
+        <h2 class="mb-3 text-2xl font-bold font-heading text-gray-900 sm:text-3xl">Cara Meminjam Barang</h2>
         <p class="text-gray-500 text-sm">Ikuti 5 langkah mudah untuk mengakses aset HMIF.</p>
     </div>
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-6">
@@ -150,13 +161,13 @@
 </div>
 
 <!-- Pantau Aktivitas -->
-<div class="bg-[#F8F9FA] py-24">
-    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+<div class="bg-[#F8F9FA] py-14 sm:py-24">
+    <div class="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 md:grid-cols-2 md:gap-16">
         <div>
-            <h2 class="text-3xl font-bold font-heading text-gray-900 mb-5 leading-tight">Pantau Aktivitas Secara<br>Langsung</h2>
+            <h2 class="mb-5 text-2xl font-bold font-heading leading-tight text-gray-900 sm:text-3xl">Pantau Aktivitas Secara<br>Langsung</h2>
             <p class="text-gray-500 mb-10 text-sm leading-relaxed">Dapatkan transparansi penuh atas ketersediaan stok dan status peminjaman terkini.</p>
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-5 mb-5">
-                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 shrink-0">
+                <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600 shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 </div>
                 <div>
@@ -179,11 +190,11 @@
             <div class="bg-white rounded-3xl shadow-md border border-gray-50 p-6 flex flex-col justify-between">
                 <h4 class="font-bold text-[10px] text-gray-400 mb-8 uppercase tracking-widest">Statistik Barang</h4>
                 <div class="flex items-end gap-3 h-32 mb-4 px-2">
-                    <div class="w-full bg-blue-200 rounded-t-sm h-1/2"></div>
-                    <div class="w-full bg-blue-600 rounded-t-sm h-full"></div>
-                    <div class="w-full bg-blue-200 rounded-t-sm h-2/5"></div>
-                    <div class="w-full bg-blue-400 rounded-t-sm h-3/4"></div>
-                    <div class="w-full bg-blue-200 rounded-t-sm h-1/3"></div>
+                    <div class="w-full bg-green-200 rounded-t-sm h-1/2"></div>
+                    <div class="w-full bg-green-600 rounded-t-sm h-full"></div>
+                    <div class="w-full bg-green-200 rounded-t-sm h-2/5"></div>
+                    <div class="w-full bg-green-400 rounded-t-sm h-3/4"></div>
+                    <div class="w-full bg-green-200 rounded-t-sm h-1/3"></div>
                 </div>
                 <div class="flex justify-between text-[9px] text-gray-400 font-semibold px-1">
                     <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span>
@@ -201,7 +212,7 @@
                         <h5 class="text-[11px] font-bold text-gray-900 mb-0.5">Menunggu Verifikasi</h5>
                         <p class="text-[9px] text-gray-400">Kamera DSLR - By Kominfo</p>
                     </div>
-                    <div class="pl-4 border-l-2 border-blue-500">
+                    <div class="pl-4 border-l-2 border-green-600">
                         <h5 class="text-[11px] font-bold text-gray-900 mb-0.5">Barang Tersedia</h5>
                         <p class="text-[9px] text-gray-400">Gitar Akustik - By Admin</p>
                     </div>
@@ -212,8 +223,8 @@
 </div>
 
 <!-- FAQ -->
-<div id="faq" class="py-24 max-w-3xl mx-auto px-6">
-    <h2 class="text-3xl font-bold font-heading text-gray-900 text-center mb-12">Frequently Asked Questions</h2>
+<div id="faq" class="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-24">
+    <h2 class="mb-10 text-center text-2xl font-bold font-heading text-gray-900 sm:mb-12 sm:text-3xl">Frequently Asked Questions</h2>
     <div class="space-y-4">
         @foreach([
             'Siapa yang boleh meminjam barang?',

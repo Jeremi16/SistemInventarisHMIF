@@ -11,16 +11,16 @@
     @endif
 
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900">Barang Keluar</h2>
+        <div class="min-w-0">
+            <h2 class="text-xl font-bold text-gray-900 sm:text-2xl">Barang Keluar</h2>
             <p class="mt-1 text-sm text-gray-500">Catat penghapusan, kerusakan, atau pemindahan barang permanen.</p>
         </div>
-        <a href="{{ route('outgoing.create') }}" class="inline-flex items-center justify-center rounded-lg bg-hmif-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-hmif-700">
+        <a href="{{ route('outgoing.create') }}" class="inline-flex w-full items-center justify-center rounded-lg bg-hmif-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-hmif-700 sm:w-auto">
             Catat Barang Keluar
         </a>
     </div>
 
-    <form method="GET" action="{{ route('outgoing.index') }}" class="grid gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm md:grid-cols-4">
+    <form method="GET" action="{{ route('outgoing.index') }}" data-auto-filter class="grid gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm md:grid-cols-4">
         <select name="reason" class="rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">
             <option value="">Semua Alasan</option>
             @foreach($reasons as $reason)
@@ -29,14 +29,14 @@
         </select>
         <input type="date" name="date_from" value="{{ request('date_from') }}" class="rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">
         <input type="date" name="date_to" value="{{ request('date_to') }}" class="rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">
-        <div class="flex gap-2">
+        <div class="flex flex-col gap-2 sm:flex-row">
             <button type="submit" class="flex-1 rounded-lg bg-hmif-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-hmif-700">Filter</button>
-            <a href="{{ route('outgoing.index') }}" class="rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Reset</a>
+            <a href="{{ route('outgoing.index') }}" class="inline-flex items-center justify-center rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Reset</a>
         </div>
     </form>
 
     <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-        <div class="overflow-x-auto">
+        <div class="hmif-table-scroll">
             <table class="w-full text-left text-sm text-gray-600">
                 <thead class="border-b border-gray-100 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
@@ -52,7 +52,7 @@
                     @forelse($outgoings as $outgoing)
                         <tr class="hover:bg-gray-50">
                             <td class="whitespace-nowrap px-5 py-4">{{ $outgoing->date->format('d M Y') }}</td>
-                            <td class="px-5 py-4 font-semibold text-gray-900">{{ $outgoing->item?->name ?? '-' }}</td>
+                            <td class="hmif-break-anywhere px-5 py-4 font-semibold text-gray-900">{{ $outgoing->item?->name ?? '-' }}</td>
                             <td class="px-5 py-4">{{ ucfirst($outgoing->reason) }}</td>
                             <td class="px-5 py-4 font-semibold text-gray-900">{{ $outgoing->quantity }}</td>
                             <td class="px-5 py-4">
@@ -62,7 +62,7 @@
                                     <span class="text-gray-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-5 py-4">{{ $outgoing->notes ?: '-' }}</td>
+                            <td class="hmif-break-anywhere px-5 py-4">{{ $outgoing->notes ?: '-' }}</td>
                         </tr>
                     @empty
                         <tr>

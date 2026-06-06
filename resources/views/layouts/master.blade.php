@@ -27,12 +27,12 @@
         <x-layouts.sidebar />
 
         {{-- Main Content Area --}}
-        <div class="flex-1 flex flex-col lg:ml-64">
+        <div class="min-w-0 flex-1 flex flex-col lg:ml-64">
             {{-- Top Navbar --}}
             <x-layouts.top-navbar />
 
             {{-- Page Content --}}
-            <main class="flex-1 p-4 md:p-6 lg:p-8">
+            <main class="min-w-0 flex-1 overflow-x-hidden p-3 sm:p-4 md:p-6 lg:p-8">
                 @yield('content')
             </main>
         </div>

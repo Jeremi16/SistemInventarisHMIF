@@ -138,13 +138,13 @@ class BorrowingRequestTest extends TestCase
         $this->get(route('dashboard'))
             ->assertOk()
             ->assertSee('Laptop ASUS')
-            ->assertSee('Disetujui')
+            ->assertSee('Siap Diambil')
             ->assertDontSee('Aksi Admin');
 
         $this->get(route('borrowing.index'))
             ->assertOk()
             ->assertSee('Silakan ambil barang di sekretariat HMIF.')
-            ->assertSee('Disetujui');
+            ->assertSee('Siap Diambil');
     }
 
     public function test_catalog_stock_updates_when_admin_changes_borrowing_status(): void

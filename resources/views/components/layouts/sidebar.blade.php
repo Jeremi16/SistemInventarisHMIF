@@ -33,16 +33,21 @@
             'active' => request()->routeIs('inventory.*'),
         ],
         [
-            'label' => 'Barang Masuk',
-            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m3 5H5m12 0a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
-            'route' => 'incoming.index',
-            'active' => request()->routeIs('incoming.*'),
-        ],
-        [
-            'label' => 'Barang Keluar',
-            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1"/></svg>',
-            'route' => 'outgoing.index',
-            'active' => request()->routeIs('outgoing.*'),
+            'label' => 'Mutasi Barang',
+            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4 4 4m6-4v12m0 0 4-4m-4 4-4-4"/></svg>',
+            'active' => request()->routeIs('incoming.*') || request()->routeIs('outgoing.*'),
+            'children' => [
+                [
+                    'label' => 'Barang Masuk',
+                    'route' => 'incoming.index',
+                    'active' => request()->routeIs('incoming.*'),
+                ],
+                [
+                    'label' => 'Barang Keluar',
+                    'route' => 'outgoing.index',
+                    'active' => request()->routeIs('outgoing.*'),
+                ],
+            ],
         ],
         [
             'label' => 'Peminjaman',
@@ -93,47 +98,68 @@
 
 <aside
     id="sidebar"
-    class="fixed top-0 left-0 z-40 h-screen w-64 bg-sidebar transition-transform duration-300 ease-in-out lg:translate-x-0 -translate-x-full"
+    class="fixed top-0 left-0 z-40 h-screen w-64 max-w-[85vw] bg-sidebar transition-transform duration-300 ease-in-out lg:translate-x-0 -translate-x-full"
 >
     {{-- Logo / Brand --}}
-    <div class="flex items-center justify-center h-16 border-b border-sidebar-hover/30">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+    <div class="flex h-16 items-center border-b border-sidebar-hover/30 px-4">
+        <div class="flex min-w-0 items-center gap-3">
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                 </svg>
             </div>
-            <span class="text-white font-bold text-lg">HMIF Inventory</span>
-        </div>
-    </div>
-
-    {{-- User Profile Card --}}
-    <div class="p-4 border-b border-sidebar-hover/30">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                <span class="text-accent font-semibold text-sm">{{ strtoupper(substr($userName, 0, 2)) }}</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-white text-sm font-medium truncate">{{ $userName }}</p>
-                <p class="text-gray-400 text-xs">{{ $userRole }}</p>
-            </div>
+            <span class="truncate text-lg font-bold text-white">HMIF Inventory</span>
         </div>
     </div>
 
     {{-- Navigation --}}
     <nav class="flex-1 p-4 space-y-1 overflow-y-auto h-[calc(100vh-8rem)]">
         @foreach($navItems as $item)
-            <a
-                href="{{ route($item['route']) }}"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200
-                    {{ $item['active']
-                        ? 'bg-sidebar-active text-white'
-                        : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
-                    }}"
-            >
-                {!! $item['icon'] !!}
-                <span>{{ $item['label'] }}</span>
-            </a>
+            @if(isset($item['children']))
+                <details class="group" {{ $item['active'] ? 'open' : '' }}>
+                    <summary
+                        class="flex list-none items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200 marker:hidden
+                            {{ $item['active']
+                                ? 'bg-sidebar-active text-white'
+                                : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
+                            }}"
+                    >
+                        <span class="flex items-center gap-3">
+                            {!! $item['icon'] !!}
+                            <span>{{ $item['label'] }}</span>
+                        </span>
+                        <svg class="h-4 w-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
+                        </svg>
+                    </summary>
+                    <div class="mt-1 space-y-1 pl-9">
+                        @foreach($item['children'] as $child)
+                            <a
+                                href="{{ route($child['route']) }}"
+                                class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200
+                                    {{ $child['active']
+                                        ? 'bg-white/15 text-white'
+                                        : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
+                                    }}"
+                            >
+                                {{ $child['label'] }}
+                            </a>
+                        @endforeach
+                    </div>
+                </details>
+            @else
+                <a
+                    href="{{ route($item['route']) }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200
+                        {{ $item['active']
+                            ? 'bg-sidebar-active text-white'
+                            : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
+                        }}"
+                >
+                    {!! $item['icon'] !!}
+                    <span>{{ $item['label'] }}</span>
+                </a>
+            @endif
         @endforeach
     </nav>
 
