@@ -6,12 +6,16 @@
 @php
     $success = session('borrowing_success');
     $hasItem = filled($itemName);
+    $oldStartDate = old('start_date');
+    $oldEndDate = old('end_date');
+    $startDateValue = $oldStartDate ? \Illuminate\Support\Carbon::parse($oldStartDate)->format('Y-m-d\TH:i:s') : '';
+    $endDateValue = $oldEndDate ? \Illuminate\Support\Carbon::parse($oldEndDate)->format('Y-m-d\TH:i:s') : '';
 @endphp
 
-<div class="max-w-3xl mx-auto">
-    <div class="bg-white rounded-lg p-6 md:p-8 shadow-sm border border-gray-100">
+<div class="mx-auto max-w-3xl">
+    <div class="rounded-lg border border-gray-100 bg-white p-4 shadow-sm sm:p-6 md:p-8">
         <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-800">Formulir Pengajuan Peminjaman</h2>
+            <h2 class="text-xl font-bold text-gray-800 sm:text-2xl">Formulir Pengajuan Peminjaman</h2>
             <p class="text-gray-500 mt-2">Lengkapi detail peminjaman barang inventaris HMIF.</p>
         </div>
 
@@ -75,23 +79,27 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Durasi Pinjam</label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="start_date" class="block text-xs font-medium text-gray-500 mb-1">Tanggal Mulai</label>
+                        <label for="start_date" class="block text-xs font-medium text-gray-500 mb-1">Tanggal & Waktu Mulai</label>
                         <input
-                            type="date"
+                            type="datetime-local"
                             id="start_date"
                             name="start_date"
-                            value="{{ old('start_date') }}"
+                            value="{{ $startDateValue }}"
+                            min="{{ now()->format('Y-m-d\TH:i:s') }}"
+                            step="1"
                             required
                             class="w-full rounded-lg border-gray-300 px-4 py-2 focus:ring-hmif-500 focus:border-hmif-500"
                         >
                     </div>
                     <div>
-                        <label for="end_date" class="block text-xs font-medium text-gray-500 mb-1">Tanggal Pengembalian</label>
+                        <label for="end_date" class="block text-xs font-medium text-gray-500 mb-1">Tanggal & Waktu Pengembalian</label>
                         <input
-                            type="date"
+                            type="datetime-local"
                             id="end_date"
                             name="end_date"
-                            value="{{ old('end_date') }}"
+                            value="{{ $endDateValue }}"
+                            min="{{ now()->format('Y-m-d\TH:i:s') }}"
+                            step="1"
                             required
                             class="w-full rounded-lg border-gray-300 px-4 py-2 focus:ring-hmif-500 focus:border-hmif-500"
                         >
@@ -143,7 +151,7 @@
                 </div>
             </div>
 
-            <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:justify-end gap-3">
+            <div class="hmif-mobile-actions border-t border-gray-100 pt-6 sm:justify-end">
                 <a href="{{ route('catalog.index') }}" class="inline-flex items-center justify-center px-5 py-3 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
                     Kembali ke Katalog
                 </a>
@@ -161,7 +169,7 @@
 
 @if($success)
     <div id="borrowing-success-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 px-4" role="dialog" aria-modal="true" aria-labelledby="borrowing-success-title">
-        <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+        <div class="w-full max-w-md rounded-lg bg-white p-4 shadow-xl sm:p-6">
             <div class="flex items-start gap-4">
                 <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-700">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -208,5 +216,19 @@
             modal.classList.add('hidden');
         }
     }
+
+    document.getElementById('start_date')?.addEventListener('change', function () {
+        const endDate = document.getElementById('end_date');
+
+        if (!endDate) {
+            return;
+        }
+
+        endDate.min = this.value;
+
+        if (endDate.value && endDate.value < this.value) {
+            endDate.value = this.value;
+        }
+    });
 </script>
 @endpush

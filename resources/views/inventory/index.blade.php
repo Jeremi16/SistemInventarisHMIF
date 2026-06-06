@@ -11,13 +11,13 @@
     {{-- Header & Search + Filter --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h2 class="text-xl font-bold text-gray-800">Katalog Inventaris</h2>
+            <h2 class="text-xl font-bold text-gray-800 sm:text-2xl">Katalog Inventaris</h2>
             <p class="text-sm text-gray-500 mt-1">Kelola dan lihat semua barang inventaris HMIF</p>
         </div>
         @if($canManageInventory)
             <a
                 href="{{ route('inventory.create') }}"
-                class="inline-flex items-center justify-center px-4 py-2.5 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hmif-500"
+                class="inline-flex w-full items-center justify-center px-4 py-2.5 bg-hmif-600 hover:bg-hmif-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hmif-500 sm:w-auto"
             >
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -28,8 +28,8 @@
     </div>
 
     {{-- Search Bar & Category Filter --}}
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <form method="GET" action="{{ route('inventory.index') }}" class="grid gap-3 md:grid-cols-[1fr_12rem_12rem_12rem_auto]">
+    <div class="rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
+        <form method="GET" action="{{ route('inventory.index') }}" data-auto-filter class="grid gap-3 md:grid-cols-[1fr_12rem_12rem_12rem_auto]">
             {{-- Search Input --}}
             <div class="relative flex-1">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -50,7 +50,6 @@
             <div>
                 <select
                     name="category"
-                    onchange="this.form.submit()"
                     class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-hmif-500 focus:border-transparent bg-white appearance-none cursor-pointer"
                 >
                     <option value="all" {{ request('category') === 'all' || !request('category') ? 'selected' : '' }}>
@@ -66,7 +65,6 @@
 
             <select
                 name="status"
-                onchange="this.form.submit()"
                 class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-hmif-500 focus:border-transparent bg-white appearance-none cursor-pointer"
             >
                 <option value="all" {{ request('status') === 'all' || !request('status') ? 'selected' : '' }}>Semua Status</option>
@@ -77,7 +75,6 @@
 
             <select
                 name="condition"
-                onchange="this.form.submit()"
                 class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-hmif-500 focus:border-transparent bg-white appearance-none cursor-pointer"
             >
                 <option value="all" {{ request('condition') === 'all' || !request('condition') ? 'selected' : '' }}>Semua Kondisi</option>
@@ -111,7 +108,7 @@
 
     {{-- Items Grid --}}
     @if($items->count() > 0)
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @foreach($items as $item)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
                     {{-- Image Placeholder --}}
@@ -128,7 +125,7 @@
                     {{-- Card Content --}}
                     <div class="p-4 space-y-3">
                         <div>
-                            <h3 class="font-semibold text-gray-800 text-sm truncate">{{ $item->name }}</h3>
+                            <h3 class="hmif-break-anywhere text-sm font-semibold text-gray-800">{{ $item->name }}</h3>
                             <p class="text-xs text-gray-500 mt-0.5">{{ $item->location ?? 'Tidak ada lokasi' }}</p>
                         </div>
 

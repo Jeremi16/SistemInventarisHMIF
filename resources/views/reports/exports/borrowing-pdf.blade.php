@@ -23,7 +23,7 @@
     @php
         $statusLabels = [
             'pending' => 'Menunggu',
-            'approved' => 'Disetujui',
+            'approved' => 'Siap Diambil',
             'rejected' => 'Ditolak',
             'borrowed' => 'Dipinjam',
             'returned' => 'Dikembalikan',
@@ -50,6 +50,7 @@
                 <th>Tanggal Pinjam</th>
                 <th>Tanggal Kembali</th>
                 <th>Status</th>
+                <th>Foto Pengembalian</th>
                 <th>Catatan</th>
             </tr>
         </thead>
@@ -58,9 +59,10 @@
                 <tr>
                     <td>{{ $borrowing->borrower_name }}<br>{{ $borrowing->borrower_nim ?: '-' }}</td>
                     <td>{{ $borrowing->item_name }}</td>
-                    <td>{{ $borrowing->start_date->format('d M Y') }}</td>
-                    <td>{{ $borrowing->end_date->format('d M Y') }}</td>
+                    <td>{{ $borrowing->startDateTime()?->format('d M Y H:i:s') }}</td>
+                    <td>{{ $borrowing->endDateTime()?->format('d M Y H:i:s') }}</td>
                     <td>{{ $statusLabels[$borrowing->status] ?? $borrowing->status }}</td>
+                    <td>{{ $borrowing->return_photo ? 'Ada' : '-' }}</td>
                     <td>{{ $borrowing->admin_note ?: '-' }}</td>
                 </tr>
             @endforeach

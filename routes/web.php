@@ -102,6 +102,12 @@ $adminDashboard = function (Request $request) {
 Route::middleware('auth')->group(function () use ($adminDashboard) {
     Route::get('/dashboard', $adminDashboard)->name('dashboard');
     Route::get('/member/dashboard', MemberDashboardController::class)->name('member.dashboard');
+    Route::get('/profile', function (Request $request) {
+        return view('profile.show', [
+            'user' => $request->user(),
+            'sessionUser' => $request->session()->get('user', []),
+        ]);
+    })->name('profile.show');
 });
 
 // Placeholder routes for sidebar navigation
@@ -141,6 +147,8 @@ Route::prefix('borrowing')->middleware('auth')->name('borrowing.')->group(functi
     Route::get('/', [BorrowingController::class, 'index'])->name('index');
     Route::get('/request', [BorrowingController::class, 'create'])->name('request');
     Route::post('/request', [BorrowingController::class, 'store'])->name('store');
+    Route::get('/{borrowing}/return', [BorrowingController::class, 'returnForm'])->name('return');
+    Route::post('/{borrowing}/return', [BorrowingController::class, 'recordReturn'])->name('return.store');
     Route::get('/{borrowing}', [BorrowingController::class, 'show'])->name('show');
     Route::get('/{borrowing}/extension', [BorrowingController::class, 'extensionForm'])->name('extension');
     Route::post('/{borrowing}/extension', [BorrowingController::class, 'requestExtension'])->name('extension.request');
@@ -151,8 +159,6 @@ Route::prefix('borrowing')->middleware(['auth', 'role:admin,operator'])->name('b
     Route::patch('/{borrowing}/status', [BorrowingController::class, 'updateStatus'])->name('status.update');
     Route::get('/{borrowing}/handover', [BorrowingController::class, 'handoverForm'])->name('handover');
     Route::post('/{borrowing}/handover', [BorrowingController::class, 'recordHandover'])->name('handover.store');
-    Route::get('/{borrowing}/return', [BorrowingController::class, 'returnForm'])->name('return');
-    Route::post('/{borrowing}/return', [BorrowingController::class, 'recordReturn'])->name('return.store');
     Route::patch('/{borrowing}/extension/approve', [BorrowingController::class, 'approveExtension'])->name('extension.approve');
     Route::patch('/{borrowing}/extension/reject', [BorrowingController::class, 'rejectExtension'])->name('extension.reject');
     Route::post('/{borrowing}/notes', [BorrowingController::class, 'storeNote'])->name('notes.store');

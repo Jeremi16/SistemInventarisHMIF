@@ -4,8 +4,8 @@
 
 @section('content')
 <div class="space-y-6">
-    <div>
-        <h2 class="text-2xl font-bold text-gray-900">Laporan Kondisi Barang</h2>
+    <div class="min-w-0">
+        <h2 class="text-xl font-bold text-gray-900 sm:text-2xl">Laporan Kondisi Barang</h2>
         <p class="mt-1 text-sm text-gray-500">Ringkasan kondisi dan status inventaris aktif.</p>
     </div>
 
@@ -25,8 +25,8 @@
         @endforeach
     </section>
 
-    <form method="GET" action="{{ route('reports.condition') }}" class="flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:flex-row">
-        <select name="category" class="rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100 sm:w-64">
+    <form method="GET" action="{{ route('reports.condition') }}" data-auto-filter class="flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:flex-row">
+        <select name="category" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100 sm:w-64">
             <option value="">Semua Kategori</option>
             @foreach($categories as $category)
                 <option value="{{ $category }}" @selected(request('category') === $category)>{{ $category }}</option>
@@ -37,7 +37,7 @@
     </form>
 
     <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-        <div class="overflow-x-auto">
+        <div class="hmif-table-scroll">
             <table class="w-full text-left text-sm text-gray-600">
                 <thead class="border-b border-gray-100 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
@@ -51,7 +51,7 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($items as $item)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-5 py-4 font-semibold text-gray-900">{{ $item->name }}</td>
+                            <td class="hmif-break-anywhere px-5 py-4 font-semibold text-gray-900">{{ $item->name }}</td>
                             <td class="px-5 py-4">{{ $item->category }}</td>
                             <td class="px-5 py-4">{{ ['good' => 'Baik', 'fair' => 'Layak Pakai', 'damaged' => 'Rusak'][$item->condition] ?? $item->condition }}</td>
                             <td class="px-5 py-4">{{ ['available' => 'Tersedia', 'borrowed' => 'Dipinjam', 'maintenance' => 'Maintenance'][$item->status] ?? $item->status }}</td>
