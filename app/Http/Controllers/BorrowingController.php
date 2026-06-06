@@ -104,6 +104,7 @@ class BorrowingController extends Controller
                 'item' => $itemName,
                 'borrowing_id' => $borrowing->id,
                 'whatsapp_url' => $this->whatsappUrl($message),
+                'redirect_url' => route('borrowing.show', $borrowing),
             ]);
     }
 

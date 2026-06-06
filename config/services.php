@@ -1,5 +1,12 @@
 <?php
 
+$googleCaBundle = env('GOOGLE_CA_BUNDLE');
+$googleVerifyCa = $googleCaBundle
+    ? (preg_match('/^[A-Za-z]:[\\\\\/]/', $googleCaBundle) === 1 || str_starts_with($googleCaBundle, DIRECTORY_SEPARATOR)
+        ? $googleCaBundle
+        : base_path($googleCaBundle))
+    : (file_exists(base_path('resources/certs/cacert.pem')) ? base_path('resources/certs/cacert.pem') : true);
+
 return [
 
     /*
@@ -32,6 +39,15 @@ return [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
+        ],
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', env('APP_URL').'/auth/google/callback'),
+        'guzzle' => [
+            'verify' => $googleVerifyCa,
         ],
     ],
 

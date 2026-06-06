@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\BorrowingController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ItemTransactionController;
 use App\Http\Controllers\MemberDashboardController;
@@ -8,65 +10,17 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Models\Borrowing;
 use App\Models\Item;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Schema;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
-
-Route::post('/login', function (Request $request) {
-    $credentials = $request->validate([
-        'identifier' => ['required', 'string'],
-        'password' => ['required', 'string'],
-    ], [
-        'identifier.required' => 'Email atau NIM wajib diisi.',
-        'password.required' => 'Password wajib diisi.',
-    ]);
-
-    $identifier = $credentials['identifier'];
-    $userQuery = User::query()->where('email', $identifier);
-
-    if (Schema::hasColumn('users', 'nim')) {
-        $userQuery->orWhere('nim', $identifier);
-    }
-
-    $user = $userQuery->first();
-
-    if (! $user || ! Hash::check($credentials['password'], $user->password)) {
-        return back()
-            ->withErrors(['identifier' => 'Email/NIM atau password tidak sesuai.'])
-            ->onlyInput('identifier');
-    }
-
-    if (Schema::hasColumn('users', 'is_active') && ! $user->is_active) {
-        return back()
-            ->withErrors(['identifier' => 'Akun ini sedang nonaktif. Hubungi admin HMIF.'])
-            ->onlyInput('identifier');
-    }
-
-    Auth::login($user, $request->boolean('remember'));
-    $request->session()->regenerate();
-    $request->session()->put('user', [
-        'name' => $user->name,
-        'nim' => $user->nim ?? null,
-        'role' => $user->role ?? 'member',
-    ]);
-
-    $dashboardRoute = in_array(strtolower((string) $user->role), ['admin', 'operator'], true)
-        ? 'dashboard'
-        : 'member.dashboard';
-
-    return redirect()->route($dashboardRoute);
-})->name('login.attempt');
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.attempt');
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('auth.google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
 
 $adminDashboard = function (Request $request) {
     $role = strtolower((string) (
@@ -113,10 +67,8 @@ Route::middleware('auth')->group(function () use ($adminDashboard) {
 // Placeholder routes for sidebar navigation
 Route::get('/catalog', [ItemController::class, 'catalog'])->middleware('auth')->name('catalog.index');
 
-// Inventory - CRUD: admin & operator only
+// Inventory - manage existing items: admin & operator only
 Route::middleware(['auth', 'role:admin,operator'])->group(function () {
-    Route::get('/inventory/create', [ItemController::class, 'create'])->name('inventory.create');
-    Route::post('/inventory', [ItemController::class, 'store'])->name('inventory.store');
     Route::get('/inventory/{item}/edit', [ItemController::class, 'edit'])->name('inventory.edit');
     Route::put('/inventory/{item}', [ItemController::class, 'update'])->name('inventory.update');
     Route::delete('/inventory/{item}', [ItemController::class, 'destroy'])->name('inventory.destroy');
@@ -176,13 +128,7 @@ Route::prefix('reports')->middleware(['auth', 'role:admin,operator'])->name('rep
     Route::get('/borrowing/pdf', [ReportController::class, 'exportBorrowingPdf'])->name('borrowing.pdf');
 });
 
-Route::post('/logout', function (Request $request) {
-    Auth::logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-
-    return redirect()->route('login');
-})->name('logout');
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
 // User Management - admin only
 Route::middleware(['auth', 'role:admin'])->prefix('users')->name('users.')->group(function () {

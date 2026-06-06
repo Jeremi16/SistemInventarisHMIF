@@ -8,8 +8,8 @@
     $hasItem = filled($itemName);
     $oldStartDate = old('start_date');
     $oldEndDate = old('end_date');
-    $startDateValue = $oldStartDate ? \Illuminate\Support\Carbon::parse($oldStartDate)->format('Y-m-d\TH:i:s') : '';
-    $endDateValue = $oldEndDate ? \Illuminate\Support\Carbon::parse($oldEndDate)->format('Y-m-d\TH:i:s') : '';
+    $startDateValue = $oldStartDate ? \Illuminate\Support\Carbon::parse($oldStartDate)->toDateString() : '';
+    $endDateValue = $oldEndDate ? \Illuminate\Support\Carbon::parse($oldEndDate)->toDateString() : '';
 @endphp
 
 <div class="mx-auto max-w-3xl">
@@ -79,27 +79,25 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Durasi Pinjam</label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="start_date" class="block text-xs font-medium text-gray-500 mb-1">Tanggal & Waktu Mulai</label>
+                        <label for="start_date" class="block text-xs font-medium text-gray-500 mb-1">Tanggal Mulai</label>
                         <input
-                            type="datetime-local"
+                            type="date"
                             id="start_date"
                             name="start_date"
                             value="{{ $startDateValue }}"
-                            min="{{ now()->format('Y-m-d\TH:i:s') }}"
-                            step="1"
+                            min="{{ now()->toDateString() }}"
                             required
                             class="w-full rounded-lg border-gray-300 px-4 py-2 focus:ring-hmif-500 focus:border-hmif-500"
                         >
                     </div>
                     <div>
-                        <label for="end_date" class="block text-xs font-medium text-gray-500 mb-1">Tanggal & Waktu Pengembalian</label>
+                        <label for="end_date" class="block text-xs font-medium text-gray-500 mb-1">Tanggal Pengembalian</label>
                         <input
-                            type="datetime-local"
+                            type="date"
                             id="end_date"
                             name="end_date"
                             value="{{ $endDateValue }}"
-                            min="{{ now()->format('Y-m-d\TH:i:s') }}"
-                            step="1"
+                            min="{{ now()->toDateString() }}"
                             required
                             class="w-full rounded-lg border-gray-300 px-4 py-2 focus:ring-hmif-500 focus:border-hmif-500"
                         >
@@ -169,7 +167,7 @@
 </div>
 
 @if($success)
-    <div id="borrowing-success-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 px-4" role="dialog" aria-modal="true" aria-labelledby="borrowing-success-title">
+    <div id="borrowing-success-modal" data-redirect-url="{{ $success['redirect_url'] ?? route('borrowing.index') }}" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 px-4" role="dialog" aria-modal="true" aria-labelledby="borrowing-success-title">
         <div class="w-full max-w-md rounded-lg bg-white p-4 shadow-xl sm:p-6">
             <div class="flex items-start gap-4">
                 <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-700">
@@ -212,9 +210,10 @@
 <script>
     function closeBorrowingSuccessModal() {
         const modal = document.getElementById('borrowing-success-modal');
+        const redirectUrl = modal?.dataset.redirectUrl || @json(route('borrowing.index'));
 
-        if (modal) {
-            modal.classList.add('hidden');
+        if (redirectUrl) {
+            window.location.href = redirectUrl;
         }
     }
 

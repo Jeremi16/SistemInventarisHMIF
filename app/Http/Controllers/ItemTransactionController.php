@@ -31,22 +31,25 @@ class ItemTransactionController extends Controller
     public function incomingCreate()
     {
         return view('incoming.create', [
-            'items' => Item::query()->orderBy('name')->get(),
             'sources' => ['pembelian', 'donasi', 'hibah'],
         ]);
     }
 
     public function incomingStore(Request $request)
     {
+        $request->merge([
+            'item_name' => trim((string) $request->input('item_name')),
+        ]);
+
         $validated = $request->validate([
-            'item_id' => ['required', 'integer', 'exists:items,id'],
+            'item_name' => ['required', 'string', 'max:255'],
             'source' => ['required', 'string', 'in:pembelian,donasi,hibah'],
             'date' => ['required', 'date', 'before_or_equal:today'],
             'quantity' => ['required', 'integer', 'min:1'],
             'proof_file' => ['nullable', 'file', 'mimes:pdf,jpg,png', 'max:2048'],
             'notes' => ['nullable', 'string', 'max:100'],
         ], [
-            'item_id.required' => 'Barang wajib dipilih.',
+            'item_name.required' => 'Nama barang wajib diisi.',
             'source.required' => 'Sumber pengadaan wajib dipilih.',
             'date.required' => 'Tanggal pengadaan wajib diisi.',
             'quantity.required' => 'Jumlah wajib diisi.',
@@ -55,14 +58,36 @@ class ItemTransactionController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $request) {
+            $itemName = $validated['item_name'];
+
+            $item = Item::withTrashed()
+                ->whereRaw('LOWER(name) = ?', [strtolower($itemName)])
+                ->lockForUpdate()
+                ->first();
+
+            if ($item) {
+                if ($item->trashed()) {
+                    $item->restore();
+                }
+            } else {
+                $item = Item::create([
+                    'name' => $itemName,
+                    'category' => 'Lainnya',
+                    'status' => 'available',
+                    'quantity' => 0,
+                    'condition' => 'good',
+                ]);
+            }
+
+            $validated['item_id'] = $item->id;
+            unset($validated['item_name']);
+
             if ($request->hasFile('proof_file')) {
                 $validated['proof_file'] = $request->file('proof_file')->store('incoming', 'public');
             }
 
             ItemIncoming::create($validated);
 
-            // Update stok item
-            $item = Item::findOrFail($validated['item_id']);
             $item->quantity += $validated['quantity'];
 
             if ($item->status === 'borrowed' && $item->quantity > 0) {
