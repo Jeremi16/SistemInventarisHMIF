@@ -6,7 +6,6 @@ use App\Models\Borrowing;
 use App\Models\BorrowingNote;
 use App\Models\Item;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -28,7 +27,7 @@ class BorrowingController extends Controller
 
         return view('borrowing.index', [
             'borrowings' => $borrowings,
-            'statuses' => $this->statusOptions(),
+            'statuses' => $this->statusChangeOptions(),
             'isAdmin' => $this->isAdmin($request),
         ]);
     }
@@ -53,24 +52,16 @@ class BorrowingController extends Controller
             'item_name' => ['required_without:item_id', 'string', 'max:255'],
             'start_date' => ['required', 'date', 'after_or_equal:today'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'purpose' => ['required', 'string', 'min:10', 'max:1000'],
+            'purpose' => ['required', 'string', 'min:10', 'max:100'],
             'terms_accepted' => ['accepted'],
         ], [
             'item_name.required_without' => 'Nama barang wajib tersedia dari katalog.',
             'start_date.after_or_equal' => 'Tanggal mulai tidak boleh sebelum hari ini.',
-            'end_date.after_or_equal' => 'Tanggal dan waktu pengembalian harus sama atau setelah tanggal mulai.',
+            'end_date.after_or_equal' => 'Tanggal pengembalian harus sama atau setelah tanggal mulai.',
             'purpose.min' => 'Keperluan peminjaman minimal 10 karakter.',
+            'purpose.max' => 'Keperluan peminjaman maksimal 100 karakter.',
             'terms_accepted.accepted' => 'Anda harus menyetujui syarat dan ketentuan peminjaman.',
         ]);
-
-        $startAt = Carbon::parse($validated['start_date']);
-        $endAt = Carbon::parse($validated['end_date']);
-
-        if ($endAt->lt($startAt)) {
-            return back()
-                ->withErrors(['end_date' => 'Tanggal dan waktu pengembalian harus sama atau setelah tanggal mulai.'])
-                ->withInput();
-        }
 
         $item = $request->filled('item_id')
             ? Item::findOrFail($validated['item_id'])
@@ -84,15 +75,19 @@ class BorrowingController extends Controller
 
         $borrower = $this->borrowerFromSession($request);
         $itemName = $item?->name ?? $validated['item_name'];
+        $requestTime = now();
+        $startDate = \Illuminate\Support\Carbon::parse($validated['start_date'])
+            ->setTime($requestTime->hour, $requestTime->minute, $requestTime->second);
+        $endDate = \Illuminate\Support\Carbon::parse($validated['end_date'])
+            ->setTime($requestTime->hour, $requestTime->minute, $requestTime->second);
+
         $borrowing = Borrowing::create([
             'item_id' => $item?->id,
             'item_name' => $itemName,
             'borrower_name' => $borrower['name'],
             'borrower_nim' => $borrower['nim'],
-            'start_date' => $startAt->toDateString(),
-            'start_datetime' => $startAt,
-            'end_date' => $endAt->toDateString(),
-            'end_datetime' => $endAt,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
             'purpose' => $validated['purpose'],
             'status' => 'pending',
         ]);
@@ -201,9 +196,8 @@ class BorrowingController extends Controller
     }
 
     // F-11: Pencatatan Pengembalian
-    public function returnForm(Request $request, Borrowing $borrowing)
+    public function returnForm(Borrowing $borrowing)
     {
-        abort_unless($this->isAdmin($request) || $this->ownsBorrowing($request, $borrowing), 403);
         abort_unless(in_array($borrowing->status, ['borrowed', 'overdue']), 404, 'Barang belum diserahkan atau sudah dikembalikan.');
 
         return view('borrowing.return', [
@@ -214,19 +208,16 @@ class BorrowingController extends Controller
 
     public function recordReturn(Request $request, Borrowing $borrowing)
     {
-        abort_unless($this->isAdmin($request) || $this->ownsBorrowing($request, $borrowing), 403);
+        abort_unless($this->isAdmin($request), 403);
         abort_unless(in_array($borrowing->status, ['borrowed', 'overdue']), 400, 'Status peminjaman tidak valid untuk pengembalian.');
 
-        $minimumReturnDate = ($borrowing->handover_date ?: $borrowing->start_date)->format('Y-m-d');
-
         $validated = $request->validate([
-            'return_date' => ['required', 'date', 'after_or_equal:' . $minimumReturnDate],
+            'return_date' => ['required', 'date', 'after_or_equal:today'],
             'return_condition' => ['required', 'string', 'in:' . implode(',', ['good', 'fair', 'damaged', 'lost'])],
             'return_photo' => ['nullable', 'image', 'max:2048'],
             'damage_description' => ['required_if:return_condition,damaged,lost', 'nullable', 'string', 'max:1000'],
         ], [
             'return_date.required' => 'Tanggal pengembalian wajib diisi.',
-            'return_date.after_or_equal' => 'Tanggal pengembalian tidak boleh sebelum barang dipinjam.',
             'return_condition.required' => 'Kondisi barang saat dikembalikan wajib diisi.',
             'return_photo.image' => 'File harus berupa gambar.',
             'return_photo.max' => 'Ukuran foto maksimal 2MB.',
@@ -307,8 +298,6 @@ class BorrowingController extends Controller
             'extension_requested' => true,
             'extension_new_date' => $validated['extension_new_date'],
             'extension_reason' => $validated['extension_reason'],
-            'extension_rejection_reason' => null,
-            'extension_rejected_at' => null,
         ]);
 
         return redirect()
@@ -327,8 +316,6 @@ class BorrowingController extends Controller
             'extension_requested' => false,
             'extension_new_date' => null,
             'extension_reason' => null,
-            'extension_rejection_reason' => null,
-            'extension_rejected_at' => null,
             'admin_note' => 'Perpanjangan disetujui hingga ' . $borrowing->extension_new_date->format('d M Y') . '.',
         ]);
 
@@ -340,18 +327,15 @@ class BorrowingController extends Controller
         abort_unless($this->isAdmin($request), 403);
         abort_unless($borrowing->extension_requested, 400, 'Tidak ada permintaan perpanjangan.');
 
-        $validated = $request->validate([
-            'extension_rejection_reason' => ['required', 'string', 'max:500'],
-        ], [
-            'extension_rejection_reason.required' => 'Alasan penolakan perpanjangan wajib diisi.',
+        $request->validate([
+            'admin_note' => ['nullable', 'string', 'max:500'],
         ]);
 
         $borrowing->update([
             'extension_requested' => false,
             'extension_new_date' => null,
             'extension_reason' => null,
-            'extension_rejection_reason' => $validated['extension_rejection_reason'],
-            'extension_rejected_at' => now(),
+            'admin_note' => $request->admin_note ?: 'Perpanjangan ditolak.',
         ]);
 
         return back()->with('extension_rejected', 'Perpanjangan peminjaman ditolak.');
@@ -387,15 +371,12 @@ class BorrowingController extends Controller
     {
         abort_unless(in_array($borrowing->status, ['borrowed', 'overdue']), 400, 'Status peminjaman tidak valid untuk pengecekan.');
 
-        $minimumCheckDate = ($borrowing->handover_date ?: $borrowing->start_date)->format('Y-m-d');
-
         $validated = $request->validate([
             'pre_return_condition' => ['required', 'string', 'in:good,fair,damaged'],
-            'pre_return_check_date' => ['required', 'date', 'after_or_equal:' . $minimumCheckDate, 'before_or_equal:today'],
+            'pre_return_check_date' => ['required', 'date', 'before_or_equal:today'],
         ], [
             'pre_return_condition.required' => 'Kondisi barang wajib diisi.',
             'pre_return_check_date.required' => 'Tanggal pengecekan wajib diisi.',
-            'pre_return_check_date.after_or_equal' => 'Tanggal pra-pengembalian tidak boleh sebelum barang dipinjam.',
         ]);
 
         $borrowing->update($validated);
@@ -509,9 +490,19 @@ class BorrowingController extends Controller
     {
         return [
             'pending' => 'Menunggu',
-            'approved' => 'Siap Diambil',
+            'approved' => 'Disetujui',
             'rejected' => 'Ditolak',
-            'borrowed' => 'Dipinjam',
+            'borrowed' => 'Diterima',
+            'returned' => 'Dikembalikan',
+            'overdue' => 'Terlambat',
+        ];
+    }
+
+    private function statusChangeOptions(): array
+    {
+        return [
+            'rejected' => 'Ditolak',
+            'borrowed' => 'Diterima',
             'returned' => 'Dikembalikan',
             'overdue' => 'Terlambat',
         ];
@@ -532,12 +523,5 @@ class BorrowingController extends Controller
             ?? data_get($request->session()->get('user', []), 'role');
 
         return in_array(strtolower((string) $role), ['admin', 'operator'], true);
-    }
-
-    private function ownsBorrowing(Request $request, Borrowing $borrowing): bool
-    {
-        $borrower = $this->borrowerFromSession($request);
-
-        return filled($borrower['nim']) && $borrowing->borrower_nim === $borrower['nim'];
     }
 }

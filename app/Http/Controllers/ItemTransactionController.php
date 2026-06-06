@@ -44,13 +44,14 @@ class ItemTransactionController extends Controller
             'date' => ['required', 'date', 'before_or_equal:today'],
             'quantity' => ['required', 'integer', 'min:1'],
             'proof_file' => ['nullable', 'file', 'mimes:pdf,jpg,png', 'max:2048'],
-            'notes' => ['nullable', 'string', 'max:1000'],
+            'notes' => ['nullable', 'string', 'max:100'],
         ], [
             'item_id.required' => 'Barang wajib dipilih.',
             'source.required' => 'Sumber pengadaan wajib dipilih.',
             'date.required' => 'Tanggal pengadaan wajib diisi.',
             'quantity.required' => 'Jumlah wajib diisi.',
             'quantity.min' => 'Jumlah minimal 1.',
+            'notes.max' => 'Catatan maksimal 100 karakter.',
         ]);
 
         DB::transaction(function () use ($validated, $request) {

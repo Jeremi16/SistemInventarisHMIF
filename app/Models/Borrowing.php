@@ -17,9 +17,7 @@ class Borrowing extends Model
         'borrower_name',
         'borrower_nim',
         'start_date',
-        'start_datetime',
         'end_date',
-        'end_datetime',
         'purpose',
         'status',
         'admin_note',
@@ -33,8 +31,6 @@ class Borrowing extends Model
         'extension_requested',
         'extension_new_date',
         'extension_reason',
-        'extension_rejection_reason',
-        'extension_rejected_at',
         'fine_amount',
         'pre_return_condition',
         'pre_return_check_date',
@@ -43,28 +39,15 @@ class Borrowing extends Model
     protected function casts(): array
     {
         return [
-            'start_date' => 'date',
-            'start_datetime' => 'datetime',
-            'end_date' => 'date',
-            'end_datetime' => 'datetime',
+            'start_date' => 'datetime',
+            'end_date' => 'datetime',
             'handover_date' => 'date',
             'return_date' => 'date',
             'extension_new_date' => 'date',
-            'extension_rejected_at' => 'datetime',
             'pre_return_check_date' => 'date',
             'extension_requested' => 'boolean',
             'fine_amount' => 'decimal:2',
         ];
-    }
-
-    public function startDateTime()
-    {
-        return $this->start_datetime ?: $this->start_date;
-    }
-
-    public function endDateTime()
-    {
-        return $this->end_datetime ?: $this->end_date;
     }
 
     public function item(): BelongsTo

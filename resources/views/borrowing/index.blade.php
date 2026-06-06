@@ -6,9 +6,9 @@
 @php
     $statusConfig = [
         'pending' => ['label' => 'Menunggu', 'class' => 'bg-yellow-100 text-yellow-800'],
-        'approved' => ['label' => 'Siap Diambil', 'class' => 'bg-hmif-100 text-hmif-800'],
+        'approved' => ['label' => 'Disetujui', 'class' => 'bg-blue-100 text-blue-800'],
         'rejected' => ['label' => 'Ditolak', 'class' => 'bg-red-100 text-red-800'],
-        'borrowed' => ['label' => 'Dipinjam', 'class' => 'bg-green-100 text-green-800'],
+        'borrowed' => ['label' => 'Diterima', 'class' => 'bg-indigo-100 text-indigo-800'],
         'returned' => ['label' => 'Dikembalikan', 'class' => 'bg-green-100 text-green-800'],
         'overdue' => ['label' => 'Terlambat', 'class' => 'bg-red-100 text-red-800'],
     ];
@@ -22,11 +22,10 @@
     @endif
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div class="min-w-0">
-            <h2 class="text-xl font-bold text-gray-800 sm:text-2xl">{{ $isAdmin ? 'Daftar Peminjaman' : 'Peminjaman Saya' }}</h2>
-            <p class="text-gray-500 mt-1">{{ $isAdmin ? 'Ubah status pengajuan dan tambahkan catatan untuk member.' : 'Pantau status pengajuan dan catatan dari admin.' }}</p>
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">{{ $isAdmin ? 'Daftar Peminjaman' : 'Peminjaman Saya' }}</h2>
         </div>
-        <a href="{{ route('catalog.index') }}" class="inline-flex w-full items-center justify-center px-4 py-2 bg-hmif-600 hover:bg-hmif-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hmif-500 shadow-sm sm:w-auto">
+        <a href="{{ route('catalog.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-hmif-600 hover:bg-hmif-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hmif-500 shadow-sm">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -35,7 +34,7 @@
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="hmif-table-scroll">
+        <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-gray-600">
                 <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
                     <tr>
@@ -53,6 +52,7 @@
                     @forelse($borrowings as $borrowing)
                         @php
                             $status = $statusConfig[$borrowing->status] ?? $statusConfig['pending'];
+                            $displayPurpose = \Illuminate\Support\Str::limit($borrowing->purpose, 100, '');
                         @endphp
                         <tr class="align-top hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4">
@@ -60,19 +60,14 @@
                                 <p class="text-xs text-gray-400">{{ $borrowing->borrower_nim ?? 'NIM belum tersedia' }}</p>
                             </td>
                             <td class="px-6 py-4">
-                                <p class="font-medium text-gray-800">{{ $borrowing->item_name }}</p>
-                                @if(\Illuminate\Support\Str::length($borrowing->purpose) > 120)
-                                    <details class="mt-1 max-w-sm text-xs text-gray-500">
-                                        <summary class="font-semibold text-hmif-700 hover:text-hmif-800">Lihat Keperluan</summary>
-                                        <p class="mt-2 whitespace-pre-line break-words leading-5">{{ $borrowing->purpose }}</p>
-                                    </details>
-                                @else
-                                    <p class="mt-1 max-w-sm whitespace-pre-line break-words text-xs leading-5 text-gray-500">{{ $borrowing->purpose }}</p>
-                                @endif
+                                <div class="min-w-0 max-w-64 space-y-2">
+                                    <p class="break-words font-medium text-gray-800">{{ $borrowing->item_name }}</p>
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {{ $borrowing->startDateTime()?->format('d M Y H:i:s') }}<br>
-                                <span class="text-xs text-gray-400">s.d. {{ $borrowing->endDateTime()?->format('d M Y H:i:s') }}</span>
+                                {{ $borrowing->start_date->format('d M Y H:i:s') }}<br>
+                                <span class="text-xs text-gray-400">s.d. {{ $borrowing->end_date->format('d M Y H:i:s') }}</span>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $status['class'] }}">
@@ -84,11 +79,14 @@
                             </td>
                             @if($isAdmin)
                                 <td class="px-6 py-4">
-                                    <form method="POST" action="{{ route('borrowing.status.update', $borrowing) }}" class="min-w-64 space-y-3 sm:min-w-72">
+                                    <form method="POST" action="{{ route('borrowing.status.update', $borrowing) }}" class="min-w-72 space-y-3">
                                         @csrf
                                         @method('PATCH')
-                                        <div class="flex flex-col gap-2 sm:flex-row">
-                                            <select name="status" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100 sm:w-40">
+                                        <div class="flex gap-2">
+                                            <select name="status" required class="w-40 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">
+                                                @unless(array_key_exists($borrowing->status, $statuses))
+                                                    <option value="" selected disabled>Pilih status</option>
+                                                @endunless
                                                 @foreach($statuses as $value => $label)
                                                     <option value="{{ $value }}" @selected($borrowing->status === $value)>{{ $label }}</option>
                                                 @endforeach

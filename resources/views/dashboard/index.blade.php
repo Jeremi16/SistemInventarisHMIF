@@ -6,9 +6,9 @@
 @php
     $statusConfig = [
         'pending' => ['label' => 'Menunggu', 'class' => 'bg-yellow-100 text-yellow-800'],
-        'approved' => ['label' => 'Siap Diambil', 'class' => 'bg-hmif-100 text-hmif-800'],
+        'approved' => ['label' => 'Disetujui', 'class' => 'bg-blue-100 text-blue-800'],
         'rejected' => ['label' => 'Ditolak', 'class' => 'bg-red-100 text-red-800'],
-        'borrowed' => ['label' => 'Dipinjam', 'class' => 'bg-green-100 text-green-800'],
+        'borrowed' => ['label' => 'Diterima', 'class' => 'bg-indigo-100 text-indigo-800'],
         'returned' => ['label' => 'Dikembalikan', 'class' => 'bg-green-100 text-green-800'],
         'overdue' => ['label' => 'Terlambat', 'class' => 'bg-red-100 text-red-800'],
     ];
@@ -29,9 +29,8 @@
     @endif
 
     {{-- Welcome Banner --}}
-    <div class="rounded-xl bg-gradient-to-r from-hmif-800 to-hmif-600 p-4 text-white shadow-sm sm:p-6">
-        <h2 class="hmif-break-anywhere text-xl font-bold sm:text-2xl">Selamat Datang, {{ auth()->user()?->name ?? 'Admin' }}!</h2>
-        <p class="text-hmif-200 mt-1">Sistem Manajemen Inventaris HMIF ITERA</p>
+    <div class="bg-gradient-to-r from-hmif-800 to-hmif-600 rounded-xl p-6 text-white shadow-sm">
+        <h2 class="text-2xl font-bold">Selamat Datang, {{ auth()->user()?->name ?? 'Admin' }}!</h2>
     </div>
 
     {{-- Stats Grid (F-20) --}}
@@ -58,8 +57,8 @@
                     <p class="text-sm font-medium text-gray-500">Sedang Dipinjam</p>
                     <p class="text-2xl font-bold text-gray-800 mt-1">{{ $dashboardStats['borrowed_items'] }}</p>
                 </div>
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                     </svg>
                 </div>
@@ -100,11 +99,11 @@
 
     {{-- Recent Loan Activities --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="flex flex-col gap-3 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-            <h3 class="text-base font-semibold text-gray-800 sm:text-lg">Aktivitas Peminjaman Terbaru</h3>
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-800">Aktivitas Peminjaman Terbaru</h3>
             <a href="{{ route('borrowing.index') }}" class="text-sm text-hmif-600 hover:text-hmif-700 font-medium">Lihat Semua</a>
         </div>
-        <div class="hmif-table-scroll">
+        <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-gray-600">
                 <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
                     <tr>
@@ -125,7 +124,7 @@
                                 <p class="text-xs text-gray-400">{{ $borrowing->borrower_nim ?? 'NIM belum tersedia' }}</p>
                             </td>
                             <td class="px-6 py-4">{{ $borrowing->item_name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $borrowing->startDateTime()?->format('d M Y H:i:s') }}</td>
+                            <td class="px-6 py-4">{{ $borrowing->start_date->format('d M Y H:i:s') }}</td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $status['class'] }}">
                                     {{ $status['label'] }}

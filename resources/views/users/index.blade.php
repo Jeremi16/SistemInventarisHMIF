@@ -13,16 +13,15 @@
     @endforeach
 
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div class="min-w-0">
-            <h2 class="text-xl font-bold text-gray-900 sm:text-2xl">Manajemen Pengguna</h2>
-            <p class="mt-1 text-sm text-gray-500">Daftarkan anggota, operator, dan admin sesuai hak akses.</p>
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Manajemen Pengguna</h2>
         </div>
-        <a href="{{ route('users.create') }}" class="inline-flex w-full items-center justify-center rounded-lg bg-hmif-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-hmif-700 sm:w-auto">
+        <a href="{{ route('users.create') }}" class="inline-flex items-center justify-center rounded-lg bg-hmif-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-hmif-700">
             Pengguna Baru
         </a>
     </div>
 
-    <form method="GET" action="{{ route('users.index') }}" data-auto-filter class="grid gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm md:grid-cols-[1fr_14rem_auto_auto]">
+    <form method="GET" action="{{ route('users.index') }}" class="grid gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm md:grid-cols-[1fr_14rem_auto_auto]">
         <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, email, atau NIM" class="rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">
         <select name="role" class="rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">
             <option value="all">Semua Role</option>
@@ -35,7 +34,7 @@
     </form>
 
     <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-        <div class="hmif-table-scroll">
+        <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-gray-600">
                 <thead class="border-b border-gray-100 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
@@ -51,8 +50,8 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse($users as $user)
                         <tr class="hover:bg-gray-50">
-                            <td class="hmif-break-anywhere px-5 py-4 font-semibold text-gray-900">{{ $user->name }}</td>
-                            <td class="hmif-break-anywhere px-5 py-4">{{ $user->email }}</td>
+                            <td class="px-5 py-4 font-semibold text-gray-900">{{ $user->name }}</td>
+                            <td class="px-5 py-4">{{ $user->email }}</td>
                             <td class="px-5 py-4">{{ $user->nim ?: '-' }}</td>
                             <td class="px-5 py-4">
                                 <span class="rounded-full bg-hmif-50 px-2.5 py-1 text-xs font-semibold text-hmif-700">{{ ucfirst($user->role) }}</span>
@@ -67,7 +66,7 @@
                                 </span>
                             </td>
                             <td class="px-5 py-4 text-right">
-                                <div class="inline-flex flex-col gap-2 sm:flex-row">
+                                <div class="inline-flex gap-2">
                                     <a href="{{ route('users.edit', $user) }}" class="rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Edit</a>
                                     <form method="POST" action="{{ route('users.destroy', $user) }}" onsubmit="return confirm('Nonaktifkan pengguna ini? Histori peminjaman tetap tersimpan.')">
                                         @csrf

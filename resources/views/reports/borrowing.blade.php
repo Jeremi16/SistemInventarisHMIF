@@ -8,7 +8,7 @@
         'pending' => 'Menunggu',
         'approved' => 'Siap Diambil',
         'rejected' => 'Ditolak',
-        'borrowed' => 'Dipinjam',
+        'borrowed' => 'Diterima',
         'returned' => 'Dikembalikan',
         'overdue' => 'Terlambat',
     ];

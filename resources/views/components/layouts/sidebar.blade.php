@@ -34,7 +34,7 @@
         ],
         [
             'label' => 'Mutasi Barang',
-            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4 4 4m6-4v12m0 0 4-4m-4 4-4-4"/></svg>',
+            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0-4-4m4 4-4 4M16 17H4m0 0 4 4m-4-4 4-4"/></svg>',
             'active' => request()->routeIs('incoming.*') || request()->routeIs('outgoing.*'),
             'children' => [
                 [
@@ -98,17 +98,17 @@
 
 <aside
     id="sidebar"
-    class="fixed top-0 left-0 z-40 h-screen w-64 max-w-[85vw] bg-sidebar transition-transform duration-300 ease-in-out lg:translate-x-0 -translate-x-full"
+    class="fixed top-0 left-0 z-40 h-screen w-64 bg-sidebar transition-transform duration-300 ease-in-out lg:translate-x-0 -translate-x-full"
 >
     {{-- Logo / Brand --}}
-    <div class="flex h-16 items-center border-b border-sidebar-hover/30 px-4">
-        <div class="flex min-w-0 items-center gap-3">
-            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent">
+    <div class="flex items-center justify-center h-16 border-b border-sidebar-hover/30">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                 </svg>
             </div>
-            <span class="truncate text-lg font-bold text-white">HMIF Inventory</span>
+            <span class="text-white font-bold text-lg">HMIF Inventory</span>
         </div>
     </div>
 
@@ -116,9 +116,9 @@
     <nav class="flex-1 p-4 space-y-1 overflow-y-auto h-[calc(100vh-8rem)]">
         @foreach($navItems as $item)
             @if(isset($item['children']))
-                <details class="group" {{ $item['active'] ? 'open' : '' }}>
+                <details class="sidebar-dropdown group" {{ $item['active'] ? 'open' : '' }}>
                     <summary
-                        class="flex list-none items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200 marker:hidden
+                        class="flex cursor-pointer list-none items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200
                             {{ $item['active']
                                 ? 'bg-sidebar-active text-white'
                                 : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
@@ -128,15 +128,15 @@
                             {!! $item['icon'] !!}
                             <span>{{ $item['label'] }}</span>
                         </span>
-                        <svg class="h-4 w-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <svg class="h-4 w-4 transition-transform duration-200 group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
                         </svg>
                     </summary>
-                    <div class="mt-1 space-y-1 pl-9">
+                    <div class="mt-1 space-y-1 border-l border-white/10 pl-4">
                         @foreach($item['children'] as $child)
                             <a
                                 href="{{ route($child['route']) }}"
-                                class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200
+                                class="block rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200
                                     {{ $child['active']
                                         ? 'bg-white/15 text-white'
                                         : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
