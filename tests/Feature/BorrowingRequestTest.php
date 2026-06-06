@@ -40,7 +40,10 @@ class BorrowingRequestTest extends TestCase
             ->assertOk()
             ->assertSee('Laptop ASUS')
             ->assertSee('Ayu Pratiwi')
-            ->assertSee('121140001');
+            ->assertSee('121140001')
+            ->assertSee('type="date"', false)
+            ->assertDontSee('type="datetime-local"', false)
+            ->assertSee('maxlength="100"', false);
 
         $response = $this->actingAs($member)->withSession([
             'user' => [
@@ -77,6 +80,10 @@ class BorrowingRequestTest extends TestCase
             'status' => 'pending',
         ]);
 
+        $borrowing = Borrowing::where('item_id', $item->id)->firstOrFail();
+        $this->assertSame(now()->format('H:i:s'), $borrowing->start_date->format('H:i:s'));
+        $this->assertSame($borrowing->start_date->format('H:i:s'), $borrowing->end_date->format('H:i:s'));
+
         $this->actingAs($admin)->get(route('dashboard'))
             ->assertOk()
             ->assertSee('Aktivitas Peminjaman Terbaru')
@@ -86,7 +93,9 @@ class BorrowingRequestTest extends TestCase
 
         $this->actingAs($admin)->get(route('incoming.index'))
             ->assertOk()
+            ->assertSee('Mutasi Barang')
             ->assertSee('Barang Masuk')
+            ->assertSee('Barang Keluar')
             ->assertSee('Catat Barang Masuk');
 
         $this->actingAs($member)->withSession([
@@ -144,7 +153,11 @@ class BorrowingRequestTest extends TestCase
         $this->get(route('borrowing.index'))
             ->assertOk()
             ->assertSee('Silakan ambil barang di sekretariat HMIF.')
-            ->assertSee('Disetujui');
+            ->assertSee('Disetujui')
+            ->assertDontSee('value="pending"', false)
+            ->assertDontSee('value="approved"', false)
+            ->assertSee('value="borrowed"', false)
+            ->assertSee('Diterima');
     }
 
     public function test_catalog_stock_updates_when_admin_changes_borrowing_status(): void
@@ -266,5 +279,45 @@ class BorrowingRequestTest extends TestCase
             ],
         ])->get(route('borrowing.show', $borrowing))
             ->assertForbidden();
+    }
+
+    public function test_borrowing_detail_limits_purpose_to_one_hundred_characters(): void
+    {
+        $member = User::factory()->create([
+            'name' => 'Ayu Pratiwi',
+            'nim' => '121140001',
+            'role' => 'member',
+        ]);
+
+        $startDate = now()->setTime(9, 10, 11);
+        $endDate = now()->addDay()->setTime(15, 20, 30);
+
+        $borrowing = Borrowing::create([
+            'item_name' => 'Laptop ASUS',
+            'borrower_name' => 'Ayu Pratiwi',
+            'borrower_nim' => '121140001',
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'purpose' => str_repeat('a', 120),
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($member)->withSession([
+            'user' => [
+                'name' => 'Ayu Pratiwi',
+                'nim' => '121140001',
+                'role' => 'member',
+            ],
+        ])->get(route('borrowing.show', $borrowing))
+            ->assertOk()
+            ->assertSee($startDate->format('H:i:s'))
+            ->assertSee($endDate->format('H:i:s'))
+            ->assertSee(str_repeat('a', 100))
+            ->assertDontSee(str_repeat('a', 101));
+
+        $this->get(route('borrowing.index'))
+            ->assertOk()
+            ->assertSee($startDate->format('H:i:s'))
+            ->assertSee($endDate->format('H:i:s'));
     }
 }

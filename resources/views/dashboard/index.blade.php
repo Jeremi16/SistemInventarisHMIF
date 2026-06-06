@@ -8,7 +8,7 @@
         'pending' => ['label' => 'Menunggu', 'class' => 'bg-yellow-100 text-yellow-800'],
         'approved' => ['label' => 'Disetujui', 'class' => 'bg-blue-100 text-blue-800'],
         'rejected' => ['label' => 'Ditolak', 'class' => 'bg-red-100 text-red-800'],
-        'borrowed' => ['label' => 'Dipinjam', 'class' => 'bg-indigo-100 text-indigo-800'],
+        'borrowed' => ['label' => 'Diterima', 'class' => 'bg-indigo-100 text-indigo-800'],
         'returned' => ['label' => 'Dikembalikan', 'class' => 'bg-green-100 text-green-800'],
         'overdue' => ['label' => 'Terlambat', 'class' => 'bg-red-100 text-red-800'],
     ];
@@ -31,7 +31,6 @@
     {{-- Welcome Banner --}}
     <div class="bg-gradient-to-r from-hmif-800 to-hmif-600 rounded-xl p-6 text-white shadow-sm">
         <h2 class="text-2xl font-bold">Selamat Datang, {{ auth()->user()?->name ?? 'Admin' }}!</h2>
-        <p class="text-hmif-200 mt-1">Sistem Manajemen Inventaris HMIF ITERA</p>
     </div>
 
     {{-- Stats Grid (F-20) --}}
@@ -125,7 +124,7 @@
                                 <p class="text-xs text-gray-400">{{ $borrowing->borrower_nim ?? 'NIM belum tersedia' }}</p>
                             </td>
                             <td class="px-6 py-4">{{ $borrowing->item_name }}</td>
-                            <td class="px-6 py-4">{{ $borrowing->start_date->format('d M Y') }}</td>
+                            <td class="px-6 py-4">{{ $borrowing->start_date->format('d M Y H:i:s') }}</td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $status['class'] }}">
                                     {{ $status['label'] }}

@@ -7,7 +7,7 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-2xl font-bold text-gray-900">Ajukan Perpanjangan</h2>
-            <p class="mt-1 text-sm text-gray-500">{{ $borrowing->item_name }} jatuh tempo {{ $borrowing->end_date->format('d M Y') }}.</p>
+            <p class="mt-1 text-sm text-gray-500">{{ $borrowing->item_name }} jatuh tempo {{ $borrowing->end_date->format('d M Y H:i:s') }}.</p>
         </div>
         <a href="{{ route('borrowing.show', $borrowing) }}" class="inline-flex items-center justify-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Kembali</a>
     </div>

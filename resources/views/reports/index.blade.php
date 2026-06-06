@@ -6,7 +6,6 @@
 <div class="space-y-6">
     <div>
         <h2 class="text-2xl font-bold text-gray-900">Laporan Inventaris</h2>
-        <p class="mt-1 text-sm text-gray-500">Ringkasan stok, transaksi, kondisi barang, dan peminjaman.</p>
     </div>
 
     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

@@ -27,7 +27,7 @@ class BorrowingController extends Controller
 
         return view('borrowing.index', [
             'borrowings' => $borrowings,
-            'statuses' => $this->statusOptions(),
+            'statuses' => $this->statusChangeOptions(),
             'isAdmin' => $this->isAdmin($request),
         ]);
     }
@@ -52,13 +52,14 @@ class BorrowingController extends Controller
             'item_name' => ['required_without:item_id', 'string', 'max:255'],
             'start_date' => ['required', 'date', 'after_or_equal:today'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'purpose' => ['required', 'string', 'min:10', 'max:1000'],
+            'purpose' => ['required', 'string', 'min:10', 'max:100'],
             'terms_accepted' => ['accepted'],
         ], [
             'item_name.required_without' => 'Nama barang wajib tersedia dari katalog.',
             'start_date.after_or_equal' => 'Tanggal mulai tidak boleh sebelum hari ini.',
             'end_date.after_or_equal' => 'Tanggal pengembalian harus sama atau setelah tanggal mulai.',
             'purpose.min' => 'Keperluan peminjaman minimal 10 karakter.',
+            'purpose.max' => 'Keperluan peminjaman maksimal 100 karakter.',
             'terms_accepted.accepted' => 'Anda harus menyetujui syarat dan ketentuan peminjaman.',
         ]);
 
@@ -74,13 +75,19 @@ class BorrowingController extends Controller
 
         $borrower = $this->borrowerFromSession($request);
         $itemName = $item?->name ?? $validated['item_name'];
+        $requestTime = now();
+        $startDate = \Illuminate\Support\Carbon::parse($validated['start_date'])
+            ->setTime($requestTime->hour, $requestTime->minute, $requestTime->second);
+        $endDate = \Illuminate\Support\Carbon::parse($validated['end_date'])
+            ->setTime($requestTime->hour, $requestTime->minute, $requestTime->second);
+
         $borrowing = Borrowing::create([
             'item_id' => $item?->id,
             'item_name' => $itemName,
             'borrower_name' => $borrower['name'],
             'borrower_nim' => $borrower['nim'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
+            'start_date' => $startDate,
+            'end_date' => $endDate,
             'purpose' => $validated['purpose'],
             'status' => 'pending',
         ]);
@@ -485,7 +492,17 @@ class BorrowingController extends Controller
             'pending' => 'Menunggu',
             'approved' => 'Disetujui',
             'rejected' => 'Ditolak',
-            'borrowed' => 'Dipinjam',
+            'borrowed' => 'Diterima',
+            'returned' => 'Dikembalikan',
+            'overdue' => 'Terlambat',
+        ];
+    }
+
+    private function statusChangeOptions(): array
+    {
+        return [
+            'rejected' => 'Ditolak',
+            'borrowed' => 'Diterima',
             'returned' => 'Dikembalikan',
             'overdue' => 'Terlambat',
         ];

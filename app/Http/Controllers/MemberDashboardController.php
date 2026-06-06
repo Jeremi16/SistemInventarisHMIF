@@ -10,9 +10,8 @@ class MemberDashboardController extends Controller
 {
     private const STATUS_LABELS = [
         'pending' => 'Menunggu',
-        'approved' => 'Disetujui',
         'rejected' => 'Ditolak',
-        'borrowed' => 'Dipinjam',
+        'borrowed' => 'Diterima',
         'returned' => 'Dikembalikan',
         'overdue' => 'Terlambat',
     ];
@@ -59,8 +58,8 @@ class MemberDashboardController extends Controller
                 'id' => $borrowing->id,
                 'item' => $borrowing->item_name,
                 'status' => self::STATUS_LABELS[$borrowing->status] ?? 'Menunggu',
-                'date' => $borrowing->start_date->translatedFormat('d M Y'),
-                'due' => $borrowing->end_date->translatedFormat('d M Y'),
+                'date' => $borrowing->start_date->translatedFormat('d M Y H:i:s'),
+                'due' => $borrowing->end_date->translatedFormat('d M Y H:i:s'),
                 'note' => $borrowing->admin_note ?: 'Menunggu catatan dan verifikasi admin.',
             ])
             ->values()

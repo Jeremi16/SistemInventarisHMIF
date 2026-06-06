@@ -8,7 +8,7 @@
         'pending' => ['label' => 'Menunggu', 'class' => 'bg-yellow-100 text-yellow-800'],
         'approved' => ['label' => 'Disetujui', 'class' => 'bg-blue-100 text-blue-800'],
         'rejected' => ['label' => 'Ditolak', 'class' => 'bg-red-100 text-red-800'],
-        'borrowed' => ['label' => 'Dipinjam', 'class' => 'bg-indigo-100 text-indigo-800'],
+        'borrowed' => ['label' => 'Diterima', 'class' => 'bg-indigo-100 text-indigo-800'],
         'returned' => ['label' => 'Dikembalikan', 'class' => 'bg-green-100 text-green-800'],
         'overdue' => ['label' => 'Terlambat', 'class' => 'bg-red-100 text-red-800'],
     ];
@@ -24,7 +24,6 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h2 class="text-2xl font-bold text-gray-800">{{ $isAdmin ? 'Daftar Peminjaman' : 'Peminjaman Saya' }}</h2>
-            <p class="text-gray-500 mt-1">{{ $isAdmin ? 'Ubah status pengajuan dan tambahkan catatan untuk member.' : 'Pantau status pengajuan dan catatan dari admin.' }}</p>
         </div>
         <a href="{{ route('catalog.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-hmif-600 hover:bg-hmif-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hmif-500 shadow-sm">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,6 +52,7 @@
                     @forelse($borrowings as $borrowing)
                         @php
                             $status = $statusConfig[$borrowing->status] ?? $statusConfig['pending'];
+                            $displayPurpose = \Illuminate\Support\Str::limit($borrowing->purpose, 100, '');
                         @endphp
                         <tr class="align-top hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4">
@@ -60,12 +60,14 @@
                                 <p class="text-xs text-gray-400">{{ $borrowing->borrower_nim ?? 'NIM belum tersedia' }}</p>
                             </td>
                             <td class="px-6 py-4">
-                                <p class="font-medium text-gray-800">{{ $borrowing->item_name }}</p>
-                                <p class="mt-1 max-w-xs text-xs text-gray-500">{{ $borrowing->purpose }}</p>
+                                <div class="min-w-0 max-w-64 space-y-2">
+                                    <p class="break-words font-medium text-gray-800">{{ $borrowing->item_name }}</p>
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {{ $borrowing->start_date->format('d M Y') }}<br>
-                                <span class="text-xs text-gray-400">s.d. {{ $borrowing->end_date->format('d M Y') }}</span>
+                                {{ $borrowing->start_date->format('d M Y H:i:s') }}<br>
+                                <span class="text-xs text-gray-400">s.d. {{ $borrowing->end_date->format('d M Y H:i:s') }}</span>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $status['class'] }}">
@@ -81,7 +83,10 @@
                                         @csrf
                                         @method('PATCH')
                                         <div class="flex gap-2">
-                                            <select name="status" class="w-40 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">
+                                            <select name="status" required class="w-40 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">
+                                                @unless(array_key_exists($borrowing->status, $statuses))
+                                                    <option value="" selected disabled>Pilih status</option>
+                                                @endunless
                                                 @foreach($statuses as $value => $label)
                                                     <option value="{{ $value }}" @selected($borrowing->status === $value)>{{ $label }}</option>
                                                 @endforeach

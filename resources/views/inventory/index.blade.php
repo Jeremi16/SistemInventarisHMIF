@@ -12,7 +12,6 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
             <h2 class="text-xl font-bold text-gray-800">Katalog Inventaris</h2>
-            <p class="text-sm text-gray-500 mt-1">Kelola dan lihat semua barang inventaris HMIF</p>
         </div>
         @if($canManageInventory)
             <a

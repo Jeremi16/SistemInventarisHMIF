@@ -105,6 +105,7 @@
                     id="purpose"
                     name="purpose"
                     rows="4"
+                    maxlength="100"
                     required
                     class="w-full rounded-lg border-gray-300 px-4 py-2 focus:ring-hmif-500 focus:border-hmif-500"
                     placeholder="Contoh: Digunakan untuk kegiatan rapat kerja HMIF."

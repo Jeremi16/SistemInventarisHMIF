@@ -62,7 +62,8 @@
 
             <div class="sm:col-span-2">
                 <label for="notes" class="mb-2 block text-sm font-semibold text-gray-700">Catatan</label>
-                <textarea id="notes" name="notes" rows="4" class="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">{{ old('notes') }}</textarea>
+                <textarea id="notes" name="notes" rows="4" maxlength="100" class="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100">{{ old('notes') }}</textarea>
+                <p class="mt-1 text-xs text-gray-500">Maksimal 100 karakter.</p>
             </div>
         </div>
 

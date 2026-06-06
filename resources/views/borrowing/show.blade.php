@@ -8,11 +8,12 @@
         'pending' => ['label' => 'Menunggu', 'class' => 'bg-yellow-100 text-yellow-800 border-yellow-200'],
         'approved' => ['label' => 'Disetujui', 'class' => 'bg-blue-100 text-blue-800 border-blue-200'],
         'rejected' => ['label' => 'Ditolak', 'class' => 'bg-red-100 text-red-800 border-red-200'],
-        'borrowed' => ['label' => 'Dipinjam', 'class' => 'bg-indigo-100 text-indigo-800 border-indigo-200'],
+        'borrowed' => ['label' => 'Diterima', 'class' => 'bg-indigo-100 text-indigo-800 border-indigo-200'],
         'returned' => ['label' => 'Dikembalikan', 'class' => 'bg-green-100 text-green-800 border-green-200'],
         'overdue' => ['label' => 'Terlambat', 'class' => 'bg-red-100 text-red-800 border-red-200'],
     ];
     $status = $statusConfig[$borrowing->status] ?? $statusConfig['pending'];
+    $displayPurpose = \Illuminate\Support\Str::limit($borrowing->purpose, 100, '');
 @endphp
 
 <div class="mx-auto max-w-5xl space-y-6">
@@ -53,7 +54,7 @@
     </div>
 
     <section class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div class="min-w-0 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h3 class="text-lg font-semibold text-gray-900">Status Permintaan</h3>
@@ -67,17 +68,17 @@
             <div class="mt-6 grid gap-4 sm:grid-cols-2">
                 <div class="rounded-lg bg-gray-50 p-4">
                     <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Tanggal Pinjam</p>
-                    <p class="mt-2 font-semibold text-gray-900">{{ $borrowing->start_date->format('d M Y') }}</p>
+                    <p class="mt-2 font-semibold text-gray-900">{{ $borrowing->start_date->format('d M Y H:i:s') }}</p>
                 </div>
                 <div class="rounded-lg bg-gray-50 p-4">
                     <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Tanggal Kembali</p>
-                    <p class="mt-2 font-semibold text-gray-900">{{ $borrowing->end_date->format('d M Y') }}</p>
+                    <p class="mt-2 font-semibold text-gray-900">{{ $borrowing->end_date->format('d M Y H:i:s') }}</p>
                 </div>
             </div>
 
             <div class="mt-6">
                 <p class="text-sm font-semibold text-gray-900">Keperluan</p>
-                <p class="mt-2 rounded-lg bg-gray-50 p-4 text-sm leading-6 text-gray-700">{{ $borrowing->purpose }}</p>
+                <p class="mt-2 max-w-2xl overflow-hidden break-words rounded-lg bg-gray-50 p-3 text-sm leading-6 text-gray-700">{{ $displayPurpose }}</p>
             </div>
 
             <div class="mt-6">
@@ -135,7 +136,6 @@
             </div>
 
             <div class="theme-note-panel rounded-xl border border-[#d7e78a] bg-[#fbfde8] p-6 shadow-sm">
-                <h3 class="theme-note-title font-semibold text-[#153b2d]">Catatan Peminjaman</h3>
                 <ul class="theme-note-text mt-3 space-y-2 text-sm leading-6 text-[#315343]">
                     <li>Cek status dan catatan admin secara berkala.</li>
                     <li>Ambil barang hanya setelah pengajuan disetujui.</li>
@@ -184,46 +184,5 @@
         </aside>
     </section>
 
-    <section class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-                <h3 class="text-lg font-semibold text-gray-900">Catatan Berkala</h3>
-                <p class="mt-1 text-sm text-gray-500">Catatan ini dapat dilihat peminjam untuk memantau kondisi atau instruksi admin.</p>
-            </div>
-            @if($isAdmin)
-                <form method="POST" action="{{ route('borrowing.notes.store', $borrowing) }}" class="w-full space-y-3 sm:max-w-md">
-                    @csrf
-                    <textarea name="content" rows="3" required class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-hmif-500 focus:outline-none focus:ring-2 focus:ring-hmif-100" placeholder="Tambah catatan untuk peminjam"></textarea>
-                    <button type="submit" class="rounded-lg bg-hmif-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-hmif-700">Tambah Catatan</button>
-                </form>
-            @endif
-        </div>
-
-        <div class="mt-6 divide-y divide-gray-100">
-            @forelse($borrowing->notes as $note)
-                <article class="flex gap-4 py-4">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-hmif-50 text-sm font-bold text-hmif-700">
-                        {{ strtoupper(substr($note->user?->name ?? 'AD', 0, 2)) }}
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <p class="font-semibold text-gray-900">{{ $note->user?->name ?? 'Admin' }}</p>
-                            <p class="text-xs text-gray-400">{{ $note->created_at->format('d M Y H:i') }}</p>
-                        </div>
-                        <p class="mt-2 text-sm leading-6 text-gray-700">{{ $note->content }}</p>
-                    </div>
-                    @if($isAdmin)
-                        <form method="POST" action="{{ route('borrowing.notes.delete', $note) }}" onsubmit="return confirm('Hapus catatan ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50">Hapus</button>
-                        </form>
-                    @endif
-                </article>
-            @empty
-                <p class="py-6 text-sm text-gray-500">Belum ada catatan berkala.</p>
-            @endforelse
-        </div>
-    </section>
 </div>
 @endsection

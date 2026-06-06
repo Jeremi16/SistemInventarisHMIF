@@ -13,7 +13,6 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-2xl font-bold text-gray-900">Barang Masuk</h2>
-            <p class="mt-1 text-sm text-gray-500">Catat pengadaan, donasi, atau hibah yang menambah stok inventaris.</p>
         </div>
         <a href="{{ route('incoming.create') }}" class="inline-flex items-center justify-center rounded-lg bg-hmif-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-hmif-700">
             Catat Barang Masuk
@@ -62,7 +61,11 @@
                                     <span class="text-gray-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-5 py-4">{{ $incoming->notes ?: '-' }}</td>
+                            <td class="px-5 py-4">
+                                <p class="max-w-64 whitespace-normal break-words leading-6">
+                                    {{ $incoming->notes ? \Illuminate\Support\Str::limit($incoming->notes, 100) : '-' }}
+                                </p>
+                            </td>
                         </tr>
                     @empty
                         <tr>

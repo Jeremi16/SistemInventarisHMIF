@@ -7,7 +7,7 @@
     $statusStyles = [
         'Menunggu' => 'bg-amber-100 text-amber-800 border-amber-200',
         'Disetujui' => 'bg-blue-100 text-blue-800 border-blue-200',
-        'Dipinjam' => 'bg-green-100 text-green-800 border-green-200',
+        'Diterima' => 'bg-green-100 text-green-800 border-green-200',
         'Dikembalikan' => 'bg-gray-100 text-gray-700 border-gray-200',
         'Ditolak' => 'bg-red-100 text-red-800 border-red-200',
         'Terlambat' => 'bg-red-100 text-red-800 border-red-200',
@@ -16,14 +16,14 @@
     $statusDots = [
         'Menunggu' => 'bg-amber-500',
         'Disetujui' => 'bg-blue-500',
-        'Dipinjam' => 'bg-green-500',
+        'Diterima' => 'bg-green-500',
         'Dikembalikan' => 'bg-gray-500',
         'Ditolak' => 'bg-red-500',
         'Terlambat' => 'bg-red-500',
     ];
 
     $latestRequest = $borrowings[0] ?? null;
-    $requestFlow = ['Menunggu', 'Disetujui', 'Dipinjam', 'Dikembalikan'];
+    $requestFlow = ['Menunggu', 'Disetujui', 'Diterima', 'Dikembalikan'];
     $latestStatusIndex = $latestRequest ? array_search($latestRequest['status'], $requestFlow, true) : false;
 
     $catalogItems = $availableItems->isNotEmpty() ? $availableItems : collect($fallbackItems);
@@ -35,8 +35,7 @@
             <div>
                 <p class="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-lime-100 ring-1 ring-white/15">Portal Anggota</p>
                 <h2 class="mt-5 text-2xl font-bold tracking-tight sm:text-3xl">Halo, {{ $member['name'] }}</h2>
-                <p class="mt-2 max-w-2xl text-sm leading-6 text-green-50/80">Pantau ketersediaan barang, status pengajuan, catatan admin, dan riwayat peminjaman pribadi sesuai alur SKPL HMIF.</p>
-
+                
                 <div class="mt-6 flex flex-col gap-3 sm:flex-row">
                     <a href="{{ route('catalog.index') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#cddc39] px-4 py-2.5 text-sm font-semibold text-[#153b2d] transition hover:bg-[#d9e85a]">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -50,22 +49,6 @@
                         </svg>
                         Lihat Status
                     </a>
-                </div>
-            </div>
-
-            <div class="rounded-xl bg-white/10 p-5 ring-1 ring-white/15">
-                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-lime-100">Identitas Peminjam</p>
-                <div class="mt-5 flex items-center gap-4">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-full bg-white text-lg font-bold text-[#1b8a1d]">
-                        {{ strtoupper(substr($member['name'], 0, 2)) }}
-                    </div>
-                    <div class="min-w-0">
-                        <p class="truncate font-semibold">{{ $member['name'] }}</p>
-                        <p class="text-sm text-green-50/70">{{ $member['nim'] }}</p>
-                    </div>
-                </div>
-                <div class="mt-5 rounded-lg bg-white/10 p-3 text-sm leading-6 text-green-50/80">
-                    Data nama dan NIM diambil dari sesi login dan digunakan otomatis saat pengajuan peminjaman.
                 </div>
             </div>
         </div>
@@ -138,7 +121,7 @@
                             {{ $latestRequest['status'] }}
                         </span>
                     </div>
-                    <p class="mt-2 text-sm text-gray-500">Diajukan {{ $latestRequest['date'] }} - target kembali {{ $latestRequest['due'] }}</p>
+                    <p class="mt-2 text-sm text-gray-500">{{ $latestRequest['date'] }} - {{ $latestRequest['due'] }}</p>
                     <p class="mt-3 max-w-3xl rounded-lg bg-gray-50 px-4 py-3 text-sm leading-6 text-gray-700">{{ $latestRequest['note'] }}</p>
                 @else
                     <h3 class="mt-3 text-xl font-bold text-gray-900">Belum ada permintaan aktif</h3>
@@ -149,9 +132,6 @@
             <div class="flex flex-col gap-3 sm:flex-row lg:flex-col">
                 <a href="{{ route('borrowing.index') }}" class="inline-flex items-center justify-center rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                     Lihat Semua Status
-                </a>
-                <a href="{{ route('catalog.index') }}" class="inline-flex items-center justify-center rounded-lg bg-hmif-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-hmif-700">
-                    Ajukan Peminjaman
                 </a>
             </div>
         </div>
